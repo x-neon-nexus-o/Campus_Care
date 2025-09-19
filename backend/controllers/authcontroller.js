@@ -3,26 +3,30 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-// Register (only students with @famt.ac.in)
+//Registration-x-neon-nexus-o
 exports.register = async (req, res) => {
   const { email, password } = req.body;
   if (!email.endsWith('@famt.ac.in')) {
     return res.status(400).json({ message: 'Only @famt.ac.in emails allowed for registration' });
   }
+
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
+
     const user = new User({ email, password, role: 'student' });
     await user.save();
+
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(201).json({ token, role: user.role });
+
   } catch (err) {
     console.error('Register error:', err);
     res.status(500).json({ message: 'Server error: ' + err.message });
   }
 };
 
-// Login (all users)
+//Login(all users)
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -35,16 +39,21 @@ exports.login = async (req, res) => {
       console.log('User not found:', email);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+
     console.log('User found:', user.email, 'Role:', user.role); // Debug log
     const isMatch = await user.comparePassword(password);
+
     if (!isMatch) {
       console.log('Password mismatch for:', email);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
     console.log('Login successful for:', email);
     res.json({ token, role: user.role });
-  } catch (err) {
+  } 
+  
+  catch (err) {
     console.error('Login error:', err.message, err.stack); // Detailed error log
     res.status(500).json({ message: 'Server error: ' + err.message });
   }
@@ -75,20 +84,24 @@ exports.forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
+
     const resetToken = crypto.randomBytes(20).toString('hex');
     user.resetToken = resetToken;
     user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
     await user.save();
+
     const transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
     });
+
     const mailOptions = {
       to: user.email,
       from: process.env.EMAIL_USER,
       subject: 'Password Reset',
       text: `Reset link: http://localhost:3000/reset/${resetToken}`,
     };
+
     await transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error('Email error:', error);
@@ -108,10 +121,12 @@ exports.resetPassword = async (req, res) => {
   try {
     const user = await User.findOne({ resetToken: token, resetTokenExpiry: { $gt: Date.now() } });
     if (!user) return res.status(400).json({ message: 'Invalid or expired token' });
+
     user.password = newPassword;
     user.resetToken = undefined;
     user.resetTokenExpiry = undefined;
     await user.save();
+    
     res.json({ message: 'Password reset successful' });
   } catch (err) {
     console.error('Reset password error:', err);

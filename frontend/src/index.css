@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+/* body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 20px;
@@ -38,4 +38,34 @@ button:hover {
 }
 p {
   margin: 5px 0;
+} */
+
+@font-face {
+  font-family: 'Nohemi';
+  src: url('/fonts/Nohemi-Regular.woff2') format('woff2'),
+       url('/fonts/Nohemi-Regular.woff') format('woff');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
 }
+
+/* Apply it to body */
+body {
+  font-family: 'Nohemi', sans-serif;
+  letter-spacing: normal;
+}
+
+.navbar{
+  background-color: #005F60;
+}
+
+ul{
+  color: aliceblue;
+}
+
+.footer{
+  background-color: #333333;
+  color: aliceblue;
+}
+
+

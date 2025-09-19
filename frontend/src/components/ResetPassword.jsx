@@ -27,7 +27,7 @@ function ResetPassword() {
   };
 
   return (
-    <div>
+    <div className=''>
       <h2>Reset Password</h2>
       <form onSubmit={handleSubmit}>
         <input

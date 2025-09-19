@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
+import Navbar from "../components2/Navbar";
+import Footer from "../components2/Footer";
+import Main from "../components2/Main";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -27,8 +30,8 @@ function Login() {
   };
 
   return (
-    
-    <div data-theme="retro">
+    <>
+    {/* <div data-theme="retro">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <input
@@ -46,12 +49,19 @@ function Login() {
         <button className="btn btn-outline" type="submit">Login</button>
       </form>
       {error && <p style={{ color: "red" }}>{error}</p>}
+      
       <p>
         <a href="/register">Register</a> |{" "}
         <a href="/forgot">Forgot Password?</a> |{" "}
         <a href="/admin-login">Admin Login</a>
       </p>
+    </div> */}
+    <div className="container p-4 mx-auto ">
+      <Navbar></Navbar>
+      <Main></Main>
+      <Footer></Footer>
     </div>
+    </>
   );
 }
 
