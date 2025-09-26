@@ -18,7 +18,11 @@ exports.register = async (req, res) => {
     await user.save();
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.status(201).json({ token, role: user.role });
+    res.status(201).json({ 
+      token, 
+      user: { id: user._id, email: user.email, role: user.role },
+      message: 'User registered successfully' 
+    });
 
   } catch (err) {
     console.error('Register error:', err);
@@ -50,7 +54,7 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
     console.log('Login successful for:', email);
-    res.json({ token, role: user.role });
+    res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
   } 
   
   catch (err) {
@@ -71,7 +75,7 @@ exports.adminLogin = async (req, res) => {
       return res.status(401).json({ message: 'Invalid password' });
     }
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, role: user.role });
+    res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
   } catch (err) {
     console.error('Admin login error:', err);
     res.status(500).json({ message: 'Server error: ' + err.message });
@@ -102,13 +106,8 @@ exports.forgotPassword = async (req, res) => {
       text: `Reset link: http://localhost:3000/reset/${resetToken}`,
     };
 
-    await transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Email error:', error);
-        return res.status(500).json({ message: 'Error sending email: ' + error.message });
-      }
-      res.json({ message: 'Reset email sent' });
-    });
+    await transporter.sendMail(mailOptions);
+    res.json({ message: 'Reset email sent' });
   } catch (err) {
     console.error('Forgot password error:', err);
     res.status(500).json({ message: 'Server error: ' + err.message });
@@ -130,6 +129,33 @@ exports.resetPassword = async (req, res) => {
     res.json({ message: 'Password reset successful' });
   } catch (err) {
     console.error('Reset password error:', err);
+    res.status(500).json({ message: 'Server error: ' + err.message });
+  }
+};
+
+// Get User Profile
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    res.json(user);
+  } catch (err) {
+    console.error('Get profile error:', err);
+    res.status(500).json({ message: 'Server error: ' + err.message });
+  }
+};
+
+// Get All Users (admin only)
+exports.getUsers = async (req, res) => {
+  try {
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (err) {
+    console.error('Get users error:', err);
     res.status(500).json({ message: 'Server error: ' + err.message });
   }
 };

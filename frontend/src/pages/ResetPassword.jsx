@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 
 function ResetPassword() {
@@ -16,7 +16,7 @@ function ResetPassword() {
       return;
     }
     try {
-      const res = await api.post('/reset', { token, newPassword });
+      const res = await api.post('/auth/reset', { token, newPassword });
       setMessage(res.data.message);
       setError('');
       setTimeout(() => navigate('/login'), 3000);

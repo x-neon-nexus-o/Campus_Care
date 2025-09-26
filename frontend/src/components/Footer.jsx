@@ -5,8 +5,15 @@ function Footer() {
     <div>
       <footer className="p-10 rounded-md footer footer-center bg-primary text-primary-content">
   <aside>
-      <a href="" className="href">
-        <img className='ml-0 w-36' src="imgs/CompanyLogo.png"/>
+      <a href="/" className="href">
+        <img 
+          className='ml-0 w-36' 
+          src="/imgs/CompanyLogo.png"
+          alt="FAMT College Logo"
+          onError={(e) => {
+            e.target.style.display = 'none';
+          }}
+        />
     </a>
     {/* <svg
       width="50"

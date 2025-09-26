@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../utils/api';
+import { useAuth } from '../contexts/AuthContext';
 
 function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,12 +16,15 @@ function AdminLogin() {
       return;
     }
     try {
-      const res = await api.post('/admin-login', { email, password });
-      localStorage.setItem('token', res.data.token);
-      if (res.data.role === 'admin') {
-        navigate('/admin-dashboard');
+      const result = await login(email, password);
+      if (result.success) {
+        if (result.user.role === 'admin') {
+          navigate('/admin-dashboard');
+        } else {
+          setError('Unauthorized: Not an admin account');
+        }
       } else {
-        setError('Unauthorized: Not an admin account');
+        setError(result.message);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Admin login failed');
