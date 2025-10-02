@@ -12,6 +12,15 @@ function AdminDashboard() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Build absolute URL for files served from backend /uploads
+  const getFileUrl = (p) => {
+    if (!p) return '';
+    const base = (api?.defaults?.baseURL || '').replace(/\/$/, '').replace(/\/api$/, '');
+    return `${base}${p}`;
+  };
+
+  const isImagePath = (p) => /\.(png|jpe?g|gif|bmp|webp|svg)$/i.test(p || '');
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -173,6 +182,7 @@ function AdminDashboard() {
                 <th>Urgency</th>
                 <th>Assigned To</th>
                 <th>SLA</th>
+                <th>Attachments</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -183,8 +193,31 @@ function AdminDashboard() {
                   <td>{c.department || '-'}</td>
                   <td>{c.status}</td>
                   <td>{c.urgency}</td>
-                  <td>{c.assignedTo || '-'}</td>
+                  <td>{(typeof c.assignedTo === 'string' ? c.assignedTo : (c.assignedTo?.email || c.assignedTo?.name)) || '-'}</td>
                   <td>{c.dueAt ? new Date(c.dueAt).toLocaleString() : '-'}</td>
+                  <td>
+                    <div className="flex items-center gap-2 max-w-[220px]">
+                      {c.voiceNote && (
+                        <audio controls src={getFileUrl(c.voiceNote)} className="h-8">
+                          Your browser does not support the audio element.
+                        </audio>
+                      )}
+                      {(c.mediaFiles || []).slice(0, 3).map((p, idx) => (
+                        isImagePath(p) ? (
+                          <a key={idx} href={getFileUrl(p)} target="_blank" rel="noreferrer">
+                            <img src={getFileUrl(p)} alt="attachment" className="w-12 h-12 object-cover rounded" />
+                          </a>
+                        ) : (
+                          <a key={idx} href={getFileUrl(p)} target="_blank" rel="noreferrer" className="link link-primary text-xs truncate max-w-[120px]">
+                            {p.split('/').pop()}
+                          </a>
+                        )
+                      ))}
+                      {(c.mediaFiles?.length || 0) > 3 && (
+                        <span className="text-xs opacity-70">+{c.mediaFiles.length - 3} more</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="flex gap-2">
                     <button className="btn btn-xs" onClick={()=>updateComplaint(c._id, { status: 'in_review' })}>Mark In-Review</button>
                     <button className="btn btn-xs" onClick={()=>updateComplaint(c._id, { status: 'in_progress' })}>Start</button>

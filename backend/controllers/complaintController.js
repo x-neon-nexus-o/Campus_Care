@@ -1,4 +1,5 @@
 const Complaint = require('../models/Complaint');
+const User = require('../models/User');
 const Papa = require('papaparse');
 const fs = require('fs');
 const path = require('path');
@@ -21,6 +22,19 @@ exports.createComplaint = async (req, res) => {
       room,
       department,
     } = req.body;
+
+    // Basic validations
+    const errors = [];
+    const allowedCategories = ['Infrastructure', 'Faculty', 'Harassment', 'Hostel', 'Mess', 'Admin', 'Other'];
+    if (!category || !allowedCategories.includes(category)) errors.push('Invalid category');
+    if (!subject || String(subject).trim().length < 3) errors.push('Subject is required (min 3 chars)');
+    if (!description || String(description).trim().split(/\s+/).length < 50) errors.push('Description must be at least 50 words');
+    if (!isAnonymous && !email) errors.push('Email is required if not anonymous');
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Invalid email');
+    if (phone && !/^\+?[0-9\-\s]{7,15}$/.test(phone)) errors.push('Invalid phone');
+    if (errors.length) {
+      return res.status(400).json({ message: errors.join(', ') });
+    }
 
     // Collect uploaded files
     const mediaFiles = (req.files?.media || []).map((f) => `/uploads/${f.filename}`);
@@ -146,6 +160,29 @@ exports.updateComplaint = async (req, res) => {
       return res.status(404).json({ message: 'Complaint not found' });
     }
     
+    // Normalize incoming fields to avoid cast errors
+    // Handle assignedTo sent as email or department name
+    if (Object.prototype.hasOwnProperty.call(req.body, 'assignedTo')) {
+      const val = req.body.assignedTo;
+      if (typeof val === 'string' && val) {
+        const looksLikeObjectId = /^[a-f\d]{24}$/i.test(val);
+        const looksLikeEmail = /@/.test(val);
+        if (!looksLikeObjectId) {
+          if (looksLikeEmail) {
+            const user = await User.findOne({ email: val.trim() }).select('_id');
+            if (!user) {
+              return res.status(400).json({ message: 'assignedTo email not found' });
+            }
+            req.body.assignedTo = user._id;
+          } else {
+            // Treat as department string; move to assignedDepartment
+            req.body.assignedDepartment = val;
+            delete req.body.assignedTo;
+          }
+        }
+      }
+    }
+
     // Check permissions based on role
     let canUpdate = false;
     let allowedFields = [];
@@ -177,12 +214,26 @@ exports.updateComplaint = async (req, res) => {
       return res.status(403).json({ message: 'You do not have permission to update this complaint' });
     }
     
-    // Build update object with only allowed fields
+    // Build update object with only allowed fields + validate
     const update = {};
     for (const key of allowedFields) {
       if (key in req.body) {
         update[key] = req.body[key];
       }
+    }
+
+    // Validate selected fields
+    if (update.status && !['submitted','in_progress','resolved','rejected','pending','in_review','escalated'].includes(update.status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+    if (update.urgency && !['low','medium','high','urgent'].includes(update.urgency)) {
+      return res.status(400).json({ message: 'Invalid urgency' });
+    }
+    if (update.priority && !['low','medium','high','critical'].includes(update.priority)) {
+      return res.status(400).json({ message: 'Invalid priority' });
+    }
+    if (update.slaHours && (isNaN(update.slaHours) || update.slaHours < 1 || update.slaHours > 24 * 60)) {
+      return res.status(400).json({ message: 'Invalid SLA hours' });
     }
     
     // Add comment if provided

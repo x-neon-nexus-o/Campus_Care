@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import api from '../utils/api';
 import { useNavigate } from 'react-router-dom';
-// Using a simple textarea for description to avoid React 19 + react-quill incompatibility
+// Using a simple textarea for description to avoid React 19 + react-quill incompatibility p
 import toast from 'react-hot-toast';
 import PrivacyAccessModal from '../components/PrivacyAccessModal';
 
@@ -56,11 +56,13 @@ function SubmitComplaint() {
 
   const canGoNext = useMemo(() => {
     if (step === 1) {
-      // Allow proceeding; personal details are optional unless user chooses to provide them
-      return true;
+      if (!isAnonymous) {
+        const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || '');
+        return emailOk;
+      }
+      return true; // anonymous allowed
     }
     if (step === 2) {
-      // Let users proceed with a shorter draft; enforce 200+ words on final submit
       const MIN_WORDS_TO_CONTINUE = 30;
       return subject.trim().length > 0 && category && wordCount >= MIN_WORDS_TO_CONTINUE;
     }
@@ -102,9 +104,32 @@ function SubmitComplaint() {
   };
 
   const onSubmit = async () => {
+    if (!subject.trim() || subject.trim().length < 3) {
+      toast.error('Subject is required (min 3 characters).');
+      return;
+    }
     if (wordCount < 50) {
       toast.error('Please provide at least 50 words in the description.');
       return;
+    }
+    if (!isAnonymous) {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        toast.error('Please enter a valid email address.');
+        return;
+      }
+    }
+    // Validate files (size/type) on client for faster feedback
+    const maxFileSize = 10 * 1024 * 1024; // 10MB
+    for (const f of mediaFiles) {
+      const okType = /^(image\/(jpeg|png|gif|webp|bmp|svg\+xml)|application\/(pdf|msword|vnd.openxmlformats-officedocument.wordprocessingml.document))$/.test(f.type || '');
+      if (!okType) {
+        toast.error(`Unsupported file: ${f.name}`);
+        return;
+      }
+      if (f.size > maxFileSize) {
+        toast.error(`File too large (max 10MB): ${f.name}`);
+        return;
+      }
     }
     try {
       setSubmitting(true);
@@ -138,9 +163,9 @@ function SubmitComplaint() {
       toast.dismiss(loadingToast);
       toast.success('Complaint submitted');
       if (res?.data?.id) {
-        window.alert(`Your complaint was submitted successfully. Reference ID: ${res.data.id}`);
+        toast.success(`Your complaint was submitted successfully. Reference ID: ${res.data.id}`);
       } else {
-        window.alert('Your complaint was submitted successfully.');
+        toast.success('Your complaint was submitted successfully.');
       }
       setStep(1);
       // reset
@@ -161,7 +186,6 @@ function SubmitComplaint() {
       setDepartment('');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to submit');
-      window.alert(err.response?.data?.message || 'Failed to submit');
     }
     finally {
       setSubmitting(false);
@@ -173,17 +197,17 @@ function SubmitComplaint() {
       return (
         <div className="space-y-4">
           <div className="form-control">
-            <label className="label cursor-pointer justify-start gap-3">
+            <label className="justify-start gap-3 cursor-pointer label">
               <input type="checkbox" className="toggle toggle-primary" checked={isAnonymous} onChange={(e) => setIsAnonymous(e.target.checked)} />
               <span className="label-text">Submit anonymously</span>
             </label>
           </div>
           {!isAnonymous && (
             <>
-              <input className="input input-bordered w-full" placeholder="Name (optional)" value={name} onChange={(e) => setName(e.target.value)} />
-              <input className="input input-bordered w-full" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              <input className="input input-bordered w-full" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-              <input className="input input-bordered w-full" placeholder="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)} />
+              <input className="w-full input input-bordered" placeholder="Name (optional)" value={name} onChange={(e) => setName(e.target.value)} />
+              <input className="w-full input input-bordered" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input className="w-full input input-bordered" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              <input className="w-full input input-bordered" placeholder="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)} />
             </>
           )}
         </div>
@@ -192,32 +216,32 @@ function SubmitComplaint() {
     if (step === 2) {
       return (
         <div className="space-y-4">
-          <select className="select select-bordered w-full" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <select className="w-full select select-bordered" value={category} onChange={(e) => setCategory(e.target.value)}>
             {categories.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
-          <input className="input input-bordered w-full" placeholder="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
+          <input className="w-full input input-bordered" placeholder="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
           <div>
             <label className="label">
               <span className="label-text">Detailed description (min 50 words)</span>
               <span className="label-text-alt">{wordCount} words</span>
             </label>
             <textarea
-              className="textarea textarea-bordered w-full min-h-40"
+              className="w-full textarea textarea-bordered min-h-40"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the issue in detail..."
             />
           </div>
-          <input className="input input-bordered w-full" placeholder="Tags (comma separated)" value={tags} onChange={(e) => setTags(e.target.value)} />
+          <input className="w-full input input-bordered" placeholder="Tags (comma separated)" value={tags} onChange={(e) => setTags(e.target.value)} />
         </div>
       );
     }
     if (step === 3) {
       return (
         <div className="space-y-4">
-          <input ref={mediaInputRef} type="file" multiple accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="file-input file-input-bordered w-full" onChange={(e) => setMediaFiles(Array.from(e.target.files || []))} />
+          <input ref={mediaInputRef} type="file" multiple accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="w-full file-input file-input-bordered" onChange={(e) => setMediaFiles(Array.from(e.target.files || []))} />
           <div className="flex items-center gap-3">
             {!recording ? (
               <button type="button" className="btn btn-outline" onClick={startRecording}>Record voice</button>
@@ -232,15 +256,15 @@ function SubmitComplaint() {
     if (step === 4) {
       return (
         <div className="grid gap-4 md:grid-cols-2">
-          <select className="select select-bordered w-full" value={building} onChange={(e) => setBuilding(e.target.value)}>
+          <select className="w-full select select-bordered" value={building} onChange={(e) => setBuilding(e.target.value)}>
             <option value="">Select Building</option>
             {buildings.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}
           </select>
-          <input className="input input-bordered w-full" placeholder="Block" value={block} onChange={(e) => setBlock(e.target.value)} />
-          <input className="input input-bordered w-full" placeholder="Room" value={room} onChange={(e) => setRoom(e.target.value)} />
-          <select className="select select-bordered w-full" value={department} onChange={(e) => setDepartment(e.target.value)}>
+          <input className="w-full input input-bordered" placeholder="Block" value={block} onChange={(e) => setBlock(e.target.value)} />
+          <input className="w-full input input-bordered" placeholder="Room" value={room} onChange={(e) => setRoom(e.target.value)} />
+          <select className="w-full select select-bordered" value={department} onChange={(e) => setDepartment(e.target.value)}>
             <option value="">Select Department</option>
             {departments.map((d) => (
               <option key={d} value={d}>{d}</option>
@@ -266,13 +290,13 @@ function SubmitComplaint() {
             )}
             <p><strong>Category:</strong> {category}</p>
             <p><strong>Subject:</strong> {subject}</p>
-            <div className="prose max-w-none whitespace-pre-wrap">{description}</div>
+            <div className="prose whitespace-pre-wrap max-w-none">{description}</div>
             <p><strong>Tags:</strong> {tags}</p>
             <p><strong>Media:</strong> {mediaFiles.length} file(s)</p>
             <p><strong>Voice:</strong> {voiceBlob ? 'Yes' : 'No'}</p>
             <p><strong>Location:</strong> {[building, block, room].filter(Boolean).join(' / ')} {department && ` | Dept: ${department}`}</p>
             <div className="form-control">
-              <label className="label cursor-pointer justify-start gap-3">
+              <label className="justify-start gap-3 cursor-pointer label">
                 <input type="checkbox" className="checkbox checkbox-primary" id="agree" />
                 <span className="label-text">I agree to the privacy and policy</span>
                 <button 
@@ -294,19 +318,19 @@ function SubmitComplaint() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="flex items-center justify-center min-h-screen">
       <div className="w-full max-w-3xl p-6 rounded-md shadow bg-base-100">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-semibold">Submit a Complaint</h1>
           <button className="btn btn-ghost" onClick={()=>navigate('/track-complaints')}>Back to Tracker</button>
         </div>
-        <div className="steps w-full mb-6">
+        <div className="w-full mb-6 steps">
           {[1,2,3,4,5].map((s) => (
             <a key={s} className={`step ${step >= s ? 'step-primary' : ''}`}>{s}</a>
           ))}
         </div>
         {renderStep()}
-        <div className="mt-6 flex justify-between">
+        <div className="flex justify-between mt-6">
           <button type="button" className="btn" disabled={step === 1} onClick={() => setStep((s) => Math.max(1, s - 1))}>Back</button>
           {step < 5 ? (
             <button type="button" className="btn btn-primary" disabled={!canGoNext} onClick={() => setStep((s) => Math.min(5, s + 1))}>Next</button>

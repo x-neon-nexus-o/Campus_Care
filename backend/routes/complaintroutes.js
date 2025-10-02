@@ -25,7 +25,31 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const IMAGE_TYPES = ['image/jpeg','image/png','image/gif','image/webp','image/bmp','image/svg+xml'];
+const DOC_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
+const AUDIO_TYPES = ['audio/webm','audio/mpeg','audio/mp4','audio/ogg','audio/wav'];
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB per file
+  fileFilter: (req, file, cb) => {
+    const field = file.fieldname;
+    const mimetype = file.mimetype || '';
+    if (field === 'media') {
+      if (IMAGE_TYPES.includes(mimetype) || DOC_TYPES.includes(mimetype)) return cb(null, true);
+      return cb(new Error('Invalid media file type'));
+    }
+    if (field === 'voice') {
+      if (AUDIO_TYPES.includes(mimetype)) return cb(null, true);
+      return cb(new Error('Invalid audio type'));
+    }
+    return cb(new Error('Unexpected upload field'));
+  }
+});
 
 // Create complaint (auth optional: allow anonymous but still accept logged-in user)
 router.post(
