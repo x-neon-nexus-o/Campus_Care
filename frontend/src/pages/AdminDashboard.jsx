@@ -15,8 +15,13 @@ function AdminDashboard() {
   // Build absolute URL for files served from backend /uploads
   const getFileUrl = (p) => {
     if (!p) return '';
+    const str = String(p).trim();
+    // If already absolute HTTP(S), return as-is
+    if (/^https?:\/\//i.test(str)) return str;
     const base = (api?.defaults?.baseURL || '').replace(/\/$/, '').replace(/\/api$/, '');
-    return `${base}${p}`;
+    if (!base) return str;
+    const right = str.replace(/^\/+/, '');
+    return `${base}/${right}`;
   };
 
   const isImagePath = (p) => /\.(png|jpe?g|gif|bmp|webp|svg)$/i.test(p || '');
@@ -53,7 +58,7 @@ function AdminDashboard() {
       const data = await res.json();
       // Open server-saved file URL; browser will download from /uploads/exports
       const a = document.createElement('a');
-      a.href = data.url;
+      a.href = getFileUrl(data.url);
       a.download = data.filename || 'complaints-report.csv';
       document.body.appendChild(a);
       a.click();

@@ -44,6 +44,30 @@ function SubmitComplaint() {
   const chunksRef = useRef([]);
   const [recording, setRecording] = useState(false);
 
+  // Secret keyboard shortcut for anonymous mode
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Check for Ctrl + Shift + A (case insensitive)
+      if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        setIsAnonymous(prev => {
+          const newValue = true;
+          console.log('Anonymous mode activated:', newValue);
+          toast.success('Anonymous mode activated', { 
+            duration: 3000,
+            position: 'bottom-center',
+            style: { background: '#333', color: '#fff' }
+          });
+          return newValue;
+        });
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    console.log('Keyboard shortcut listener added. Press Ctrl+Shift+A to activate anonymous mode.');
+    
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   useEffect(() => {
     // Optionally autofill from stored profile if available later
   }, []);

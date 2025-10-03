@@ -28,10 +28,14 @@ function Navbar() {
       <ul
         tabIndex={0}
         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-        <li><Link to="/submit-complaint">Submit a Complaint</Link></li>
+        {user?.role !== 'admin' && (
+          <li><Link to="/submit-complaint">Submit a Complaint</Link></li>
+        )}
         {isAuthenticated ? (
           <>
-            <li><Link to="/track-complaints">Track Status</Link></li>
+            {user?.role !== 'admin' && (
+              <li><Link to="/track-complaints">Track Status</Link></li>
+            )}
             {user?.role === 'admin' && <li><Link to="/admin-dashboard">Admin Dashboard</Link></li>}
             <li><button onClick={logout} className='me-1'>Logout</button></li>
           </>
@@ -63,10 +67,14 @@ function Navbar() {
   
   <div className="hidden navbar-center lg:flex">
     <ul className="px-1 menu menu-horizontal">
-      <li><Link to="/submit-complaint">Submit a Complaint</Link></li>
+      {user?.role !== 'admin' && (
+        <li><Link to="/submit-complaint">Submit a Complaint</Link></li>
+      )}
       {isAuthenticated ? (
         <>
-          <li><Link to="/track-complaints">Track Status</Link></li>
+          {user?.role !== 'admin' && (
+            <li><Link to="/track-complaints">Track Status</Link></li>
+          )}
           {user?.role === 'admin' && <li><Link to="/admin-dashboard">Admin Dashboard</Link></li>}
         </>
       ) : (

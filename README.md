@@ -95,6 +95,7 @@ Core API Endpoints (selection)
   - POST `/api/auth/forgot` — send password reset link
   - POST `/api/auth/reset` — reset with token
   - GET  `/api/auth/profile` — current user
+  - Note: Single active session per user is enforced. A new login invalidates old tokens; old sessions will receive 401 with message "Session invalidated. Please log in again."
 - Complaints
   - POST `/api/complaints` — create (supports media/voice; token optional for anonymous)
   - GET  `/api/complaints` — list with filters (auth required; role‑filtered)
@@ -102,6 +103,9 @@ Core API Endpoints (selection)
   - GET  `/api/complaints/:id` — get single (auth + role‑guarded)
   - PATCH `/api/complaints/:id` — update (role‑based fields)
   - GET  `/api/complaints/export/csv` — admin CSV export (honors filters). Add `save=true` to persist to server and return a URL.
+- Health
+  - GET `/api/health` — returns status, uptime, timestamp, app version, and DB connectivity state
+  - GET `/api/ready` — returns 200 when DB is connected, otherwise 503
 
 Frontend Highlights
 - `src/pages/AdminDashboard.jsx` — Admin views, filters, actions, and export dropdown

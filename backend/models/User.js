@@ -31,6 +31,8 @@ const userSchema = new mongoose.Schema({
   phone: { type: String },
   isActive: { type: Boolean, default: true },
   lastLogin: { type: Date },
+  // Server-managed session id used to enforce single active session per user
+  sessionId: { type: String, default: null },
   resetToken: String,
   resetTokenExpiry: Date,
 }, { timestamps: true });

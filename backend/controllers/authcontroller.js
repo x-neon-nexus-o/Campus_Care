@@ -15,9 +15,11 @@ exports.register = async (req, res) => {
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
     const user = new User({ email, password, role: 'student' });
+    // Generate a session id on registration to avoid any race with immediate login
+    user.sessionId = crypto.randomBytes(16).toString('hex');
     await user.save();
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id, role: user.role, sessionId: user.sessionId }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(201).json({ 
       token, 
       user: { id: user._id, email: user.email, role: user.role },
@@ -52,7 +54,12 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // Rotate session: generate a new sessionId to invalidate previous tokens
+    user.sessionId = crypto.randomBytes(16).toString('hex');
+    user.lastLogin = new Date();
+    await user.save();
+
+    const token = jwt.sign({ id: user._id, role: user.role, sessionId: user.sessionId }, process.env.JWT_SECRET, { expiresIn: '1h' });
     console.log('Login successful for:', email);
     res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
   } 
@@ -74,7 +81,12 @@ exports.adminLogin = async (req, res) => {
     if (!(await user.comparePassword(password))) {
       return res.status(401).json({ message: 'Invalid password' });
     }
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // Rotate session on admin login too
+    user.sessionId = crypto.randomBytes(16).toString('hex');
+    user.lastLogin = new Date();
+    await user.save();
+
+    const token = jwt.sign({ id: user._id, role: user.role, sessionId: user.sessionId }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
   } catch (err) {
     console.error('Admin login error:', err);
