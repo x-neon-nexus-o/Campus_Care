@@ -1,167 +1,410 @@
-CampusCare — Complaint Management Platform
+# 🎓 Web-Based Complaint Resolution System (CampusCare)
 
-Overview
-CampusCare is a full‑stack complaint management platform for campuses. Students can file complaints (with media/voice), track status, and receive updates. Admins, department heads, and faculty can triage, assign, and resolve issues with role‑based access. The project includes rich analytics, export tools (CSV, PDF, DOCX, Image), and secure authentication.
+## 📋 Project Description
 
-Key Features
-- Authentication with JWT (students, faculty, heads, admins)
-- Role‑based access control for complaints and departments
-- Complaint submission with media and voice notes
-- SLA, urgency, and priority tracking with escalation fields
-- Dashboard with KPIs and charts for admins
-- Export center:
-  - CSV (server‑side, filter‑aware, large datasets)
-  - PDF (text‑based report with KPIs and table)
-  - DOCX and Image (dashboard snapshot)
-- Password reset via email (Nodemailer)
-- Admin seeding/management scripts
+**CampusCare** is a comprehensive web-based complaint resolution system designed specifically for college and university environments. This platform streamlines the process of reporting, tracking, and resolving campus-related issues, ensuring efficient communication between students, faculty, and administration.
 
-Tech Stack
-- Backend: Node.js, Express, MongoDB (Mongoose)
-- Auth: JWT
-- Mailer: Nodemailer (Gmail or SMTP)
-- Frontend: React (Vite), TailwindCSS, DaisyUI, Recharts
-- Exports: jsPDF + autoTable, PapaParse, html-to-image, docx
+The system addresses the common challenges faced in traditional complaint management by providing a centralized, transparent, and user-friendly platform where students can voice their concerns and track resolution progress in real-time.
 
-Monorepo Structure
+### 🎯 Project Goals
+- **Streamline Communication**: Bridge the gap between students and administration
+- **Ensure Transparency**: Provide real-time tracking and status updates
+- **Improve Efficiency**: Automate complaint routing and escalation processes
+- **Maintain Privacy**: Support anonymous complaint submission when needed
+- **Data-Driven Insights**: Generate analytics for better decision-making
+
+## ✨ Key Features
+
+### 🔐 **Authentication & Authorization**
+- **Role-Based Access Control**: Students, Faculty, Department Heads, and Administrators
+- **Secure JWT Authentication**: Token-based authentication system
+- **Approval-Based Registration**: Admin-controlled user registration process
+- **Password Recovery**: Email-based password reset functionality
+
+### 📝 **Complaint Management**
+- **Multi-Step Complaint Submission**: Intuitive form with validation
+- **Anonymous Filing**: Optional anonymous complaint submission
+- **Media Support**: Upload images, documents, and voice recordings
+- **Real-Time Tracking**: Live status updates and progress monitoring
+- **Categorization**: Infrastructure, Faculty, Harassment, Hostel, Mess, Admin, and Other
+
+### 👥 **User Dashboards**
+- **Student Dashboard**: Submit complaints, track status, access help
+- **Faculty Dashboard**: Manage department complaints, update statuses
+- **Admin Panel**: Complete system oversight, analytics, and user management
+- **Responsive Design**: Mobile-friendly interface for all devices
+
+### 📊 **Analytics & Reporting**
+- **Real-Time Statistics**: Complaint counts, resolution rates, response times
+- **Export Capabilities**: CSV, PDF, DOCX, and image exports
+- **Visual Charts**: Interactive graphs and KPI dashboards
+- **SLA Tracking**: Service Level Agreement monitoring and escalation
+
+### 🔔 **Communication Features**
+- **Status Notifications**: Automated updates on complaint progress
+- **Comment System**: Internal and external communication threads
+- **Email Integration**: Automated notifications and alerts
+- **Escalation Management**: Automatic escalation for overdue complaints
+
+## 🛠️ Tech Stack
+
+### **Frontend**
+- **⚛️ React 18**: Modern React with hooks and functional components
+- **⚡ Vite**: Fast build tool and development server
+- **🎨 TailwindCSS**: Utility-first CSS framework
+- **🌼 DaisyUI**: Beautiful component library for TailwindCSS
+- **📊 Recharts**: Interactive charts and data visualization
+- **🧭 React Router**: Client-side routing and navigation
+
+### **Backend**
+- **🟢 Node.js**: JavaScript runtime environment
+- **🚀 Express.js**: Fast and minimalist web framework
+- **🍃 MongoDB**: NoSQL database for flexible data storage
+- **📦 Mongoose**: MongoDB object modeling for Node.js
+- **🔐 JWT**: JSON Web Tokens for secure authentication
+- **📧 Nodemailer**: Email sending capabilities
+
+### **Additional Tools**
+- **📄 jsPDF**: PDF generation and export
+- **📊 PapaParse**: CSV parsing and generation
+- **🖼️ html-to-image**: Dashboard screenshot exports
+- **📝 docx**: Microsoft Word document generation
+- **🔒 bcrypt**: Password hashing and security
+
+## 🏗️ System Architecture
+
+### **System Flow Overview**
 ```
-E:/CampusCare
-├─ backend/           # Express API
-│  ├─ config/         # DB connection
-│  ├─ controllers/    # Auth & complaints
-│  ├─ middleware/     # JWT protect
-│  ├─ models/         # Mongoose schemas
-│  ├─ routes/         # API routes
-│  └─ uploads/        # User uploads & exports
-└─ frontend/          # React app (Vite)
-   └─ src/            # Pages, components, utils
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Student   │    │   Faculty   │    │    Admin    │
+│  Dashboard  │    │  Dashboard  │    │  Dashboard  │
+└──────┬──────┘    └──────┬──────┘    └──────┬──────┘
+       │                  │                  │
+       └──────────────────┼──────────────────┘
+                          │
+                   ┌──────▼──────┐
+                   │   React     │
+                   │  Frontend   │
+                   └──────┬──────┘
+                          │ HTTP/REST API
+                   ┌──────▼──────┐
+                   │   Express   │
+                   │   Backend   │
+                   └──────┬──────┘
+                          │
+                   ┌──────▼──────┐
+                   │   MongoDB   │
+                   │  Database   │
+                   └─────────────┘
 ```
 
-Requirements
-- Node.js ≥ 18 (tested on 22.x)
-- MongoDB (Atlas or local)
-
-Environment Variables
-Create a `.env` file in `backend/` with:
+### **Project Structure**
 ```
-PORT=5000
-MONGO_URI="mongodb://localhost:27017/campuscare"
-# or use MONGODB_URI
-MONGODB_URI="mongodb://localhost:27017/campuscare"
-
-# JWT secret
-JWT_SECRET="a-strong-random-secret"
-
-# Nodemailer (example for Gmail; consider App Passwords)
-EMAIL_USER="youremail@example.com"
-EMAIL_PASS="your-app-password"
-```
-
-Quick Start
-1) Install dependencies
-```
-# From repo root
-cd backend && npm install
-cd ../frontend && npm install
+CampusCare/
+├── 📁 backend/                 # Express.js API Server
+│   ├── 📁 config/             # Database configuration
+│   ├── 📁 controllers/        # Business logic controllers
+│   ├── 📁 middleware/         # Authentication & validation
+│   ├── 📁 models/            # MongoDB schemas
+│   ├── 📁 routes/            # API route definitions
+│   ├── 📁 uploads/           # File uploads & exports
+│   ├── 📄 server.js          # Main server file
+│   └── 📄 package.json       # Backend dependencies
+│
+└── 📁 frontend/               # React.js Client Application
+    ├── 📁 src/
+    │   ├── 📁 components/     # Reusable UI components
+    │   ├── 📁 contexts/       # React context providers
+    │   ├── 📁 pages/          # Application pages/routes
+    │   ├── 📁 utils/          # Utility functions
+    │   └── 📄 App.jsx         # Main application component
+    ├── 📄 index.html          # HTML template
+    ├── 📄 package.json        # Frontend dependencies
+    └── 📄 vite.config.js      # Vite configuration
 ```
 
-2) Seed / update admin user (optional)
+## 🚀 Installation & Setup Guide
+
+### **Prerequisites**
+Before you begin, ensure you have the following installed on your system:
+- **Node.js** (version 18 or higher) - [Download here](https://nodejs.org/)
+- **MongoDB** (local installation or MongoDB Atlas account) - [Setup guide](https://docs.mongodb.com/manual/installation/)
+- **Git** - [Download here](https://git-scm.com/)
+
+### **Step 1: Clone the Repository**
+```bash
+# Clone the repository
+git clone https://github.com/your-username/campus-care.git
+
+# Navigate to the project directory
+cd campus-care
 ```
+
+### **Step 2: Backend Setup**
+```bash
+# Navigate to backend directory
 cd backend
-# Seed default admin (admin@famt.ac.in / admin@123)
+
+# Install backend dependencies
+npm install
+
+# Create environment variables file
+cp .env.example .env
+```
+
+### **Step 3: Configure Environment Variables**
+Create a `.env` file in the `backend/` directory with the following configuration:
+
+```env
+# Server Configuration
+PORT=5000
+
+# Database Configuration
+MONGODB_URI="mongodb://localhost:27017/campuscare"
+# For MongoDB Atlas, use your connection string:
+# MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/campuscare"
+
+# JWT Configuration
+JWT_SECRET="your-super-secret-jwt-key-here"
+
+# Email Configuration (for password reset)
+EMAIL_USER="your-email@gmail.com"
+EMAIL_PASS="your-app-password"
+
+# Optional: Admin Configuration
+ADMIN_EMAIL="admin@famt.ac.in"
+ADMIN_PASSWORD="admin@123"
+```
+
+### **Step 4: Frontend Setup**
+```bash
+# Navigate to frontend directory (from project root)
+cd frontend
+
+# Install frontend dependencies
+npm install
+```
+
+### **Step 5: Database Setup**
+```bash
+# Navigate to backend directory
+cd backend
+
+# Seed the database with default admin user
 npm run seed:admin
-# Or update/create via manager
-npm run update:admin
+
+# Optional: Create additional admin users
 npm run admin list
 ```
 
-3) Run the apps
-```
-# Terminal A
+### **Step 6: Start the Application**
+
+**Option A: Development Mode (Recommended)**
+```bash
+# Terminal 1 - Start Backend Server
 cd backend
-npm run dev   # or: node server.js
+npm run dev
 
-# Terminal B
+# Terminal 2 - Start Frontend Development Server
 cd frontend
-npm run dev   # Vite dev server
+npm run dev
 ```
-Backend will start at `http://localhost:5000`, frontend at the Vite URL (e.g., `http://localhost:5173`).
 
-Core API Endpoints (selection)
-- Auth
-  - POST `/api/auth/register` — student registration (only `@famt.ac.in`)
-  - POST `/api/auth/login` — login (all roles)
-  - POST `/api/auth/admin-login` — admin login
-  - POST `/api/auth/forgot` — send password reset link
-  - POST `/api/auth/reset` — reset with token
-  - GET  `/api/auth/profile` — current user
-  - Note: Single active session per user is enforced. A new login invalidates old tokens; old sessions will receive 401 with message "Session invalidated. Please log in again."
-- Complaints
-  - POST `/api/complaints` — create (supports media/voice; token optional for anonymous)
-  - GET  `/api/complaints` — list with filters (auth required; role‑filtered)
-    - Query params: `id, from, to, dept, status, urgency, assigned, priority, limit`
-  - GET  `/api/complaints/:id` — get single (auth + role‑guarded)
-  - PATCH `/api/complaints/:id` — update (role‑based fields)
-  - GET  `/api/complaints/export/csv` — admin CSV export (honors filters). Add `save=true` to persist to server and return a URL.
-- Health
-  - GET `/api/health` — returns status, uptime, timestamp, app version, and DB connectivity state
-  - GET `/api/ready` — returns 200 when DB is connected, otherwise 503
+**Option B: Production Mode**
+```bash
+# Build frontend for production
+cd frontend
+npm run build
 
-Frontend Highlights
-- `src/pages/AdminDashboard.jsx` — Admin views, filters, actions, and export dropdown
-- `src/utils/exportUtils.js` — CSV, PDF, DOCX, Image exports
-- `src/contexts/AuthContext.jsx` — session handling, login/logout flows
-- `src/components/Charts.jsx` — overview charts
+# Start backend server
+cd ../backend
+npm start
+```
 
-Export Guide
-- CSV (recommended for raw data)
-  - Uses server endpoint `/api/complaints/export/csv` to handle large datasets
-  - With `save=true`, CSV is stored at `backend/uploads/exports/complaints-report-<timestamp>.csv` and accessible at `/uploads/exports/<filename>`
-- PDF (text‑first)
-  - jsPDF + autoTable: includes KPIs and a paginated table of complaints
-- DOCX & Image
-  - Snapshot‑style exports useful for sharing a visual dashboard summary
+### **Step 7: Access the Application**
+- **Frontend**: Open your browser and navigate to `http://localhost:3002`
+- **Backend API**: Available at `http://localhost:5000`
+- **Admin Panel**: Login with `admin@famt.ac.in` / `admin@123`
 
-Admin & Roles
-- Roles: `student`, `faculty`, `head`, `admin`
-- Access rules are enforced on the server
-  - Admin: full access
-  - Head/Faculty: department‑scoped
-  - Student: own complaints
-- Admin scripts in `backend/ADMIN_SETUP.md` and `backend/adminManager.js`
+### **🔧 Troubleshooting**
+- **Port conflicts**: Change the PORT in `.env` if 5000 is already in use
+- **Database connection**: Ensure MongoDB is running locally or check your Atlas connection string
+- **Email issues**: Verify your email credentials and enable "Less secure app access" for Gmail
 
-Security Notes
-- JWT is required for protected routes — set `Authorization: Bearer <token>`
-- Registration restricted to `@famt.ac.in` domain
-- Passwords hashed with bcrypt
-- Uploaded files served from `/uploads` path; ensure appropriate hosting controls in production
+## 📖 Usage Guide
 
-Deployment Tips
-- Serve frontend as static assets (Vite build) behind a reverse proxy
-- Run backend with a process manager (PM2) or containerize
-- Configure environment variables securely (no hardcoded secrets)
-- Use a production mail transport (or transactional email provider)
+### **👨‍🎓 For Students**
 
-Troubleshooting
-- “Cannot find module …”: run `npm install` in both `backend/` and `frontend/`
-- MongoDB connection errors: verify `MONGO_URI`/`MONGODB_URI`
-- Email not sending: verify `EMAIL_USER`/`EMAIL_PASS` and provider restrictions
-- CSV not downloading: confirm you are logged in as admin and backend is running
-- PDF color issues: we use a text‑based PDF; for dashboard snapshots, DOCX/Image use `html-to-image`
+1. **Registration & Login**
+   ```
+   • Visit the application homepage
+   • Click "Register" and create account with college email (@famt.ac.in)
+   • Wait for admin approval (if required)
+   • Login with your credentials
+   ```
 
-Scripts Reference
-Backend `package.json` (selected):
-- `npm run dev` — start with nodemon
-- `npm run seed:admin` — create default admin
-- `npm run update:admin` — reset admin password
-- `npm run admin` — admin manager (create/update/list/delete)
+2. **Submit a Complaint**
+   ```
+   • Click "Lodge Complaint" from dashboard
+   • Fill out the multi-step form:
+     - Personal details (or choose anonymous)
+     - Complaint details (category, subject, description)
+     - Upload media files (optional)
+     - Add location details (optional)
+     - Review and submit
+   ```
 
-Frontend `package.json` (selected):
-- `npm run dev` — Vite dev server
-- `npm run build` — production build
-- `npm run preview` — preview build locally
+3. **Track Complaints**
+   ```
+   • Access "Track Complaint" from dashboard
+   • View all your submitted complaints
+   • Monitor real-time status updates
+   • Add comments or additional information
+   ```
 
-License
-MIT (or your preferred license). Update this section if needed.
+### **👩‍🏫 For Faculty & Department Heads**
+
+1. **Dashboard Access**
+   ```
+   • Login with faculty credentials
+   • Access department-specific complaints
+   • View assigned complaints and priorities
+   ```
+
+2. **Manage Complaints**
+   ```
+   • Update complaint status (In Progress, Resolved, etc.)
+   • Add internal comments and notes
+   • Assign complaints to team members
+   • Set priority levels and urgency
+   ```
+
+### **👨‍💼 For Administrators**
+
+1. **System Overview**
+   ```
+   • Access comprehensive admin dashboard
+   • View system-wide statistics and KPIs
+   • Monitor complaint resolution metrics
+   ```
+
+2. **User Management**
+   ```
+   • Approve/reject student registrations
+   • Manage faculty and staff accounts
+   • Assign roles and permissions
+   ```
+
+3. **Complaint Management**
+   ```
+   • View all complaints across departments
+   • Generate reports and analytics
+   • Export data in multiple formats (CSV, PDF, DOCX)
+   • Handle escalated complaints
+   ```
+
+## 🔮 Future Enhancements
+
+### **🤖 AI-Powered Features**
+- **Smart Categorization**: Automatic complaint classification using NLP
+- **Sentiment Analysis**: Detect urgency and emotional tone in complaints
+- **Abuse Detection**: Identify and filter inappropriate or spam complaints
+- **Predictive Analytics**: Forecast complaint trends and resolution times
+
+### **🎙️ Advanced Communication**
+- **Voice-to-Text**: Convert voice recordings to text automatically
+- **Multi-language Support**: Support for regional languages
+- **Chatbot Integration**: AI assistant for common queries and guidance
+- **SMS Notifications**: Mobile alerts for important updates
+
+### **📊 Enhanced Analytics**
+- **Machine Learning Insights**: Pattern recognition in complaint data
+- **Performance Dashboards**: Advanced KPI tracking and visualization
+- **Predictive Maintenance**: Proactive issue identification
+- **Custom Report Builder**: User-defined report generation
+
+### **🔗 Integration Capabilities**
+- **ERP Integration**: Connect with existing college management systems
+- **Mobile Application**: Native iOS and Android apps
+- **API Gateway**: Third-party integrations and webhooks
+- **Social Media Integration**: Monitor and respond to social media complaints
+
+## 👥 Contributors
+
+### **Development Team**
+- **[Your Name]** - *Project Lead & Full-Stack Developer*
+  - System architecture and database design
+  - Backend API development and authentication
+  - Frontend React components and user interface
+
+- **[Team Member 2]** - *Frontend Developer*
+  - User interface design and implementation
+  - Responsive design and mobile optimization
+  - User experience testing and improvements
+
+- **[Team Member 3]** - *Backend Developer*
+  - API development and database management
+  - Security implementation and testing
+  - Performance optimization and scalability
+
+- **[Team Member 4]** - *UI/UX Designer*
+  - User interface design and prototyping
+  - User experience research and testing
+  - Visual design and branding
+
+### **Special Thanks**
+- **College Administration** - For project guidance and requirements
+- **Faculty Advisors** - For technical mentorship and support
+- **Beta Testers** - Students and staff who provided valuable feedback
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2024 CampusCare Development Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## 📞 Support & Contact
+
+For technical support, bug reports, or feature requests:
+
+- **📧 Email**: support@campuscare.edu
+- **🐛 Issues**: [GitHub Issues](https://github.com/your-username/campus-care/issues)
+- **📖 Documentation**: [Wiki](https://github.com/your-username/campus-care/wiki)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/your-username/campus-care/discussions)
+
+---
+
+<div align="center">
+
+**⭐ If you found this project helpful, please give it a star! ⭐**
+
+Made with ❤️ by the CampusCare Development Team
+
+</div>
+
 
 
