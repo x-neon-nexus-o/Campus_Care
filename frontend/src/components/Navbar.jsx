@@ -1,9 +1,23 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import toast from 'react-hot-toast'
 
 function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleComplaintSubmit = (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      navigate('/login?redirect=/submit-complaint');
+    } else if (user?.role === 'admin') {
+      toast.error('Admin users cannot submit complaints');
+      return;
+    } else {
+      navigate('/submit-complaint');
+    }
+  };
 
   return (
     <div>
@@ -29,7 +43,7 @@ function Navbar() {
         tabIndex={0}
         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
         {user?.role !== 'admin' && (
-          <li><Link to="/submit-complaint">Submit a Complaint</Link></li>
+          <li><a href="#" onClick={handleComplaintSubmit}>Submit a Complaint</a></li>
         )}
         {isAuthenticated ? (
           <>
@@ -68,7 +82,7 @@ function Navbar() {
   <div className="hidden navbar-center lg:flex">
     <ul className="px-1 menu menu-horizontal">
       {user?.role !== 'admin' && (
-        <li><Link to="/submit-complaint">Submit a Complaint</Link></li>
+        <li><a href="#" onClick={handleComplaintSubmit}>Submit a Complaint</a></li>
       )}
       {isAuthenticated ? (
         <>
