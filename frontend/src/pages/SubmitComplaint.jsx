@@ -295,8 +295,10 @@ function SubmitComplaint() {
         <div className="space-y-4">
           <div className="form-control">
             <label className="justify-start gap-3 cursor-pointer label">
-              <input type="checkbox" className="toggle toggle-primary" checked={isAnonymous} onChange={(e) => setIsAnonymous(e.target.checked)} />
-              <span className="label-text">Submit anonymously</span>
+              <input type="checkbox" className="toggle toggle-primary" checked={isAnonymous} onChange={(e) => setIsAnonymous(e.target.checked)} style={{ display: 'none' }}
+              />
+              <span className="label-text" style={{ display: 'none' }}
+              >Submit anonymously</span>
             </label>
           </div>
           {!isAnonymous && (
