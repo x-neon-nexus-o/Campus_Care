@@ -84,33 +84,26 @@
 ## 🛠️ <a name="tech-stack"></a>Tech Stack
 
 ### **Frontend**
-- **⚛️ React 18**: Modern React with hooks and functional components
-- **⚡ Vite**: Fast build tool and development server
-- **🎨 TailwindCSS**: Utility-first CSS framework
-- **🌼 DaisyUI**: Beautiful component library for TailwindCSS
-- **🔧 Preline UI**: Accessible UI components for Tailwind CSS
-- **📋 React Hook Form**: Performant, flexible and extensible forms
-- **✅ Zod**: TypeScript-first schema declaration and validation
-- **🔥 React Hot Toast**: Smoking hot notifications for React
-- **📊 Recharts**: Interactive charts and data visualization
-- **🧭 React Router**: Client-side routing and navigation
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![DaisyUI](https://img.shields.io/badge/daisyUI-5A0EF8?style=for-the-badge&logo=daisyui&logoColor=white)
+![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white)
+![React Hook Form](https://img.shields.io/badge/React_Hook_Form-EC5990?style=for-the-badge&logo=reacthookform&logoColor=white)
+![Zod](https://img.shields.io/badge/Zod-3068B7?style=for-the-badge&logo=zod&logoColor=white)
 
 ### **Backend**
-- **🟢 Node.js**: JavaScript runtime environment
-- **🚀 Express.js**: Fast and minimalist web framework
-- **🍃 MongoDB**: NoSQL database for flexible data storage
-- **📦 Mongoose**: MongoDB object modeling for Node.js
-- **🔐 JWT**: JSON Web Tokens for secure authentication
-- **📧 Nodemailer**: Email sending capabilities
-- **🛡️ Express Rate Limit**: Basic security against brute-force attacks
-- **📂 Multer**: Node.js middleware for handling multipart/form-data
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
+![Nodemailer](https://img.shields.io/badge/Nodemailer-0073B7?style=for-the-badge&logo=nodemailer&logoColor=white)
 
-### **Additional Tools**
-- **📄 jsPDF**: PDF generation and export
-- **📊 PapaParse**: CSV parsing and generation
-- **🖼️ html-to-image**: Dashboard screenshot exports
-- **📝 docx**: Microsoft Word document generation
-- **🔒 bcrypt**: Password hashing and security
+### **Tools & Utilities**
+![Git](https://img.shields.io/badge/GIT-E44C30?style=for-the-badge&logo=git&logoColor=white)
+![NPM](https://img.shields.io/badge/NPM-%23000000.svg?style=for-the-badge&logo=npm&logoColor=white)
+![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white)
+![VS Code](https://img.shields.io/badge/VS_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white)
 
 ## 🏗️ <a name="system-architecture"></a>System Architecture
 
