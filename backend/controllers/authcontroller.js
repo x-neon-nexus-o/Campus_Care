@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const resetPasswordTemplate = require('../emailTemplates/resetPasswordTemplate');
 
 //Registration-x-neon-nexus-o
 exports.register = async (req, res) => {
@@ -111,11 +112,14 @@ exports.forgotPassword = async (req, res) => {
       auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
     });
 
+    const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
+    
     const mailOptions = {
       to: user.email,
-      from: process.env.EMAIL_USER,
-      subject: 'Password Reset',
-      text: `Reset link: http://localhost:3000/reset/${resetToken}`,
+      from: `"CampusCare" <${process.env.EMAIL_USER}>`,
+      subject: '🔑 Password Reset Request - CampusCare',
+      text: `To reset your password, please click on the following link: ${resetLink}\n\nIf you did not request this, please ignore this email.`,
+      html: resetPasswordTemplate(resetLink)
     };
 
     await transporter.sendMail(mailOptions);

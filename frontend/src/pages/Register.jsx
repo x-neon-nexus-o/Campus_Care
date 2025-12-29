@@ -1,69 +1,59 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { registerSchema } from '../utils/validationSchemas';
+import api from '../utils/api';
 import toast from 'react-hot-toast';
 import PrivacyAccessModal from '../components/PrivacyAccessModal';
 
 function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [pendingRegistration, setPendingRegistration] = useState(null);
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email.endsWith('@famt.ac.in')) {
-      setError('Only @famt.ac.in emails allowed');
-      return;
-    }
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-    
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError: setFormError,
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const onSubmit = async (data) => {
     // Show privacy modal before registration
-    setPendingRegistration({ email, password });
+    setPendingRegistration(data);
     setShowPrivacyModal(true);
   };
 
   const handlePrivacyAccept = async () => {
     setShowPrivacyModal(false);
-    
+
     if (!pendingRegistration) return;
-    
+
     try {
-      // Register the user
-      const res = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          email: pendingRegistration.email, 
-          password: pendingRegistration.password 
-        }),
+      // Register the user using centralized API
+      const res = await api.post('/auth/register', {
+        email: pendingRegistration.email,
+        password: pendingRegistration.password
       });
-      
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Registration failed');
-      }
-      
-      const data = await res.json();
-      
+
       // Automatically log in the user after registration
       const loginResult = await login(pendingRegistration.email, pendingRegistration.password);
       if (loginResult.success) {
         toast.success('Registration successful! You are now logged in.');
         navigate('/track-complaints');
       } else {
-        setError('Registration successful but login failed. Please try logging in manually.');
+        toast.success('Registration successful! Please login.');
+        navigate('/login');
       }
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      const message = err.response?.data?.message || 'Registration failed';
+      setFormError('root', { message });
+      toast.error(message);
     } finally {
       setPendingRegistration(null);
     }
@@ -78,13 +68,11 @@ function Register() {
     <>
       <div className="relative flex flex-col justify-center min-h-screen overflow-hidden mb-9">
         <div className="w-full p-6 m-auto rounded-md shadow-md lg:max-w-md bg-base-100">
-          {/* Title */}
           <h1 className="text-3xl font-semibold text-center text-primary">
             Register (Students Only)
           </h1>
 
-          {/* Form */}
-          <form className="mt-6" onSubmit={handleSubmit}>
+          <form className="mt-6" onSubmit={handleSubmit(onSubmit)}>
             {/* Email */}
             <div>
               <label className="label">
@@ -93,11 +81,12 @@ function Register() {
               <input
                 type="email"
                 placeholder="Enter your college email"
-                className="w-full input input-bordered input-primary"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                className={`w-full input input-bordered ${errors.email ? 'input-error' : 'input-primary'}`}
+                {...register('email')}
               />
+              {errors.email && (
+                <span className="text-sm text-error">{errors.email.message}</span>
+              )}
             </div>
 
             {/* Password */}
@@ -108,27 +97,30 @@ function Register() {
               <input
                 type="password"
                 placeholder="Enter password"
-                className="w-full input input-bordered input-primary"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                className={`w-full input input-bordered ${errors.password ? 'input-error' : 'input-primary'}`}
+                {...register('password')}
               />
+              {errors.password && (
+                <span className="text-sm text-error">{errors.password.message}</span>
+              )}
             </div>
 
             {/* Submit Button */}
             <div className="mt-6">
-              <button type="submit" className="w-full btn btn-primary">
-                Register
+              <button
+                type="submit"
+                className="w-full btn btn-primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Registering...' : 'Register'}
               </button>
             </div>
+
+            {errors.root && (
+              <div className="mt-3 text-sm text-center text-red-500">{errors.root.message}</div>
+            )}
           </form>
 
-          {/* Error Message */}
-          {error && (
-            <p className="mt-3 text-sm text-center text-red-500">{error}</p>
-          )}
-
-          {/* Back to Login */}
           <p className="mt-8 text-xs font-light text-center text-primary">
             Already have an account?{" "}
             <Link to="/login" className="font-medium text-primary hover:underline">
@@ -138,7 +130,6 @@ function Register() {
         </div>
       </div>
 
-      {/* Privacy & Access Modal */}
       <PrivacyAccessModal
         isOpen={showPrivacyModal}
         onClose={handlePrivacyCancel}

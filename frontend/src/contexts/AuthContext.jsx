@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { clearUserSession, setUserSession, getUserSession, isSessionValid, refreshUserData } from '../utils/sessionManager';
 
@@ -15,6 +16,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const session = getUserSession();
@@ -23,7 +25,7 @@ export const AuthProvider = ({ children }) => {
       api.defaults.headers.common['Authorization'] = `Bearer ${session.token}`;
       setUser(session.user);
       setLoading(false);
-      
+
       // Refresh user data to ensure it's current
       refreshUserData(api).then(userData => {
         if (userData) {
@@ -54,22 +56,22 @@ export const AuthProvider = ({ children }) => {
     try {
       // Clear any existing session first
       clearUserSession();
-      
+
       const response = await api.post('/auth/login', { email, password });
       const { token, user: userData } = response.data;
-      
+
       // Set up new session
       setUserSession(userData, token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(userData);
-      
+
       return { success: true, user: userData };
     } catch (error) {
       // Clear session on login failure
       clearUserSession();
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Login failed' 
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Login failed'
       };
     }
   };
@@ -79,8 +81,8 @@ export const AuthProvider = ({ children }) => {
     clearUserSession();
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
-    // Redirect to login page after logout
-    window.location.href = '/login';
+    // Client-side redirect to login page
+    navigate('/login');
   };
 
   const value = {
