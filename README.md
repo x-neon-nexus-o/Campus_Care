@@ -53,6 +53,10 @@ The system addresses the common challenges faced in traditional complaint manage
 - **⚡ Vite**: Fast build tool and development server
 - **🎨 TailwindCSS**: Utility-first CSS framework
 - **🌼 DaisyUI**: Beautiful component library for TailwindCSS
+- **🔧 Preline UI**: Accessible UI components for Tailwind CSS
+- **📋 React Hook Form**: Performant, flexible and extensible forms
+- **✅ Zod**: TypeScript-first schema declaration and validation
+- **🔥 React Hot Toast**: Smoking hot notifications for React
 - **📊 Recharts**: Interactive charts and data visualization
 - **🧭 React Router**: Client-side routing and navigation
 
@@ -63,6 +67,8 @@ The system addresses the common challenges faced in traditional complaint manage
 - **📦 Mongoose**: MongoDB object modeling for Node.js
 - **🔐 JWT**: JSON Web Tokens for secure authentication
 - **📧 Nodemailer**: Email sending capabilities
+- **🛡️ Express Rate Limit**: Basic security against brute-force attacks
+- **📂 Multer**: Node.js middleware for handling multipart/form-data
 
 ### **Additional Tools**
 - **📄 jsPDF**: PDF generation and export
@@ -104,20 +110,24 @@ CampusCare/
 ├── 📁 backend/                 # Express.js API Server
 │   ├── 📁 config/             # Database configuration
 │   ├── 📁 controllers/        # Business logic controllers
+│   ├── 📁 emailTemplates/     # Email HTML templates
 │   ├── 📁 middleware/         # Authentication & validation
-│   ├── 📁 models/            # MongoDB schemas
-│   ├── 📁 routes/            # API route definitions
-│   ├── 📁 uploads/           # File uploads & exports
-│   ├── 📄 server.js          # Main server file
-│   └── 📄 package.json       # Backend dependencies
+│   ├── 📁 models/             # MongoDB schemas
+│   ├── 📁 routes/             # API route definitions
+│   ├── 📁 uploads/            # File uploads & exports
+│   ├── 📄 adminManager.js     # Admin management script
+│   ├── 📄 server.js           # Main server file
+│   └── 📄 package.json        # Backend dependencies
 │
 └── 📁 frontend/               # React.js Client Application
     ├── 📁 src/
+    │   ├── 📁 assets/         # Static assets
     │   ├── 📁 components/     # Reusable UI components
     │   ├── 📁 contexts/       # React context providers
     │   ├── 📁 pages/          # Application pages/routes
     │   ├── 📁 utils/          # Utility functions
-    │   └── 📄 App.jsx         # Main application component
+    │   ├── 📄 App.jsx         # Main application component
+    │   └── 📄 main.jsx        # Entry point
     ├── 📄 index.html          # HTML template
     ├── 📄 package.json        # Frontend dependencies
     └── 📄 vite.config.js      # Vite configuration
