@@ -71,7 +71,7 @@ exports.listComplaints = async (req, res) => {
   try {
     const { id, from, to, dept, status, urgency, assigned, priority, limit } = req.query;
     const query = {};
-    
+
     // Role-based access control
     if (req.user.role === 'admin') {
       // Admin can see all complaints
@@ -93,12 +93,12 @@ exports.listComplaints = async (req, res) => {
       // Students can only see their own complaints
       query.userId = req.user.id;
     }
-    
+
     // Additional filters
     if (id) {
       try {
         query._id = id;
-      } catch (_) {}
+      } catch (_) { }
     }
     if (from || to) {
       query.createdAt = {};
@@ -111,38 +111,52 @@ exports.listComplaints = async (req, res) => {
     if (priority) query.priority = priority;
     if (assigned === 'true') query.assignedTo = { $exists: true, $ne: null };
     if (assigned === 'false') query.$or = [
-      { assignedTo: { $exists: false } }, 
+      { assignedTo: { $exists: false } },
       { assignedTo: null }
     ];
-    
+
     // Cap limit to prevent abuse; allow admins larger exports
-    const maxLimit = req.user.role === 'admin' ? 10000 : 1000;
-    const safeLimit = Math.min(parseInt(limit || '100', 10) || 100, maxLimit);
+    const maxLimit = req.user.role === 'admin' ? 10000 : 100;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limitNum = parseInt(limit || '10', 10) || 10;
+    const safeLimit = Math.min(limitNum, maxLimit);
+    const skip = (page - 1) * safeLimit;
+
+    const total = await Complaint.countDocuments(query);
 
     const items = await Complaint.find(query)
       .populate('userId', 'email name role')
       .populate('assignedTo', 'email name role department')
       .sort({ createdAt: -1 })
+      .skip(skip)
       .limit(safeLimit);
-    
+
     // Transform data to hide sensitive information for non-admin users
     const transformedItems = items.map(item => {
       const complaint = item.toObject();
-      
+
       // Hide user details for anonymous complaints unless user is admin or owner
-      if (complaint.isAnonymous && req.user.role !== 'admin' && 
-          complaint.userId && complaint.userId._id.toString() !== req.user.id) {
+      if (complaint.isAnonymous && req.user.role !== 'admin' &&
+        complaint.userId && complaint.userId._id.toString() !== req.user.id) {
         complaint.userId = null;
         complaint.name = 'Anonymous User';
         complaint.email = null;
         complaint.studentId = null;
         complaint.phone = null;
       }
-      
+
       return complaint;
     });
-    
-    res.json(transformedItems);
+
+    res.json({
+      data: transformedItems,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / safeLimit),
+        limit: safeLimit
+      }
+    });
   } catch (err) {
     console.error('List complaints error:', err);
     res.status(500).json({ message: 'Server error: ' + err.message });
@@ -153,13 +167,13 @@ exports.listComplaints = async (req, res) => {
 exports.updateComplaint = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // First, check if the complaint exists
     const complaint = await Complaint.findById(id);
     if (!complaint) {
       return res.status(404).json({ message: 'Complaint not found' });
     }
-    
+
     // Normalize incoming fields to avoid cast errors
     // Handle assignedTo sent as email or department name
     if (Object.prototype.hasOwnProperty.call(req.body, 'assignedTo')) {
@@ -186,7 +200,7 @@ exports.updateComplaint = async (req, res) => {
     // Check permissions based on role
     let canUpdate = false;
     let allowedFields = [];
-    
+
     if (req.user.role === 'admin') {
       canUpdate = true;
       allowedFields = ['status', 'assignedTo', 'urgency', 'priority', 'slaHours', 'dueAt', 'assignedDepartment', 'escalatedAt', 'escalatedTo', 'escalationReason'];
@@ -209,11 +223,11 @@ exports.updateComplaint = async (req, res) => {
         allowedFields = ['description', 'tags']; // Students can only update description and tags
       }
     }
-    
+
     if (!canUpdate) {
       return res.status(403).json({ message: 'You do not have permission to update this complaint' });
     }
-    
+
     // Build update object with only allowed fields + validate
     const update = {};
     for (const key of allowedFields) {
@@ -223,19 +237,19 @@ exports.updateComplaint = async (req, res) => {
     }
 
     // Validate selected fields
-    if (update.status && !['submitted','in_progress','resolved','rejected','pending','in_review','escalated'].includes(update.status)) {
+    if (update.status && !['submitted', 'in_progress', 'resolved', 'rejected', 'pending', 'in_review', 'escalated'].includes(update.status)) {
       return res.status(400).json({ message: 'Invalid status' });
     }
-    if (update.urgency && !['low','medium','high','urgent'].includes(update.urgency)) {
+    if (update.urgency && !['low', 'medium', 'high', 'urgent'].includes(update.urgency)) {
       return res.status(400).json({ message: 'Invalid urgency' });
     }
-    if (update.priority && !['low','medium','high','critical'].includes(update.priority)) {
+    if (update.priority && !['low', 'medium', 'high', 'critical'].includes(update.priority)) {
       return res.status(400).json({ message: 'Invalid priority' });
     }
     if (update.slaHours && (isNaN(update.slaHours) || update.slaHours < 1 || update.slaHours > 24 * 60)) {
       return res.status(400).json({ message: 'Invalid SLA hours' });
     }
-    
+
     // Add comment if provided
     if (req.body.comment) {
       update.$push = {
@@ -246,11 +260,11 @@ exports.updateComplaint = async (req, res) => {
         }
       };
     }
-    
+
     const doc = await Complaint.findByIdAndUpdate(id, update, { new: true })
       .populate('userId', 'email name role')
       .populate('assignedTo', 'email name role department');
-    
+
     res.json(doc);
   } catch (err) {
     console.error('Update complaint error:', err);
@@ -266,36 +280,36 @@ exports.getComplaint = async (req, res) => {
       .populate('userId', 'email name role')
       .populate('assignedTo', 'email name role department')
       .populate('comments.userId', 'email name role');
-    
+
     if (!complaint) {
       return res.status(404).json({ message: 'Complaint not found' });
     }
-    
+
     // Check if user can view this complaint using the model method
     if (!complaint.canUserView(req.user)) {
       return res.status(403).json({ message: 'You do not have permission to view this complaint' });
     }
-    
+
     // Transform data to hide sensitive information
     const complaintObj = complaint.toObject();
-    
+
     // Hide user details for anonymous complaints unless user is admin or owner
-    if (complaintObj.isAnonymous && req.user.role !== 'admin' && 
-        complaintObj.userId && complaintObj.userId._id.toString() !== req.user.id) {
+    if (complaintObj.isAnonymous && req.user.role !== 'admin' &&
+      complaintObj.userId && complaintObj.userId._id.toString() !== req.user.id) {
       complaintObj.userId = null;
       complaintObj.name = 'Anonymous User';
       complaintObj.email = null;
       complaintObj.studentId = null;
       complaintObj.phone = null;
     }
-    
+
     // Filter comments based on user role
     if (req.user.role !== 'admin' && req.user.role !== 'head') {
-      complaintObj.comments = complaintObj.comments.filter(comment => 
+      complaintObj.comments = complaintObj.comments.filter(comment =>
         !comment.isInternal || (comment.userId && comment.userId._id && comment.userId._id.toString() === req.user.id)
       );
     }
-    
+
     res.json(complaintObj);
   } catch (err) {
     console.error('Get complaint error:', err);
@@ -314,7 +328,7 @@ exports.exportComplaintsCSV = async (req, res) => {
     const { id, from, to, dept, status, urgency, assigned, priority, save } = req.query;
     const query = {};
     if (id) {
-      try { query._id = id; } catch (_) {}
+      try { query._id = id; } catch (_) { }
     }
     if (from || to) {
       query.createdAt = {};
@@ -326,7 +340,7 @@ exports.exportComplaintsCSV = async (req, res) => {
     if (urgency) query.urgency = urgency;
     if (priority) query.priority = priority;
     if (assigned === 'true') query.assignedTo = { $exists: true, $ne: null };
-    if (assigned === 'false') query.$or = [ { assignedTo: { $exists: false } }, { assignedTo: null } ];
+    if (assigned === 'false') query.$or = [{ assignedTo: { $exists: false } }, { assignedTo: null }];
 
     const items = await Complaint.find(query)
       .populate('userId', 'email name role studentId phone')

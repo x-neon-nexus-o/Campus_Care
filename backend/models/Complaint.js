@@ -5,10 +5,10 @@ const complaintSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     isAnonymous: { type: Boolean, default: false },
-    
+
     // Encrypted anonymous tracking (for system use only)
-    anonymousId: { 
-      type: String, 
+    anonymousId: {
+      type: String,
       unique: true,
       sparse: true // Allows null values
     },
@@ -42,7 +42,7 @@ const complaintSchema = new mongoose.Schema(
     // Assignment and Management
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     assignedDepartment: { type: String },
-    
+
     // Meta
     status: {
       type: String,
@@ -51,16 +51,16 @@ const complaintSchema = new mongoose.Schema(
     },
     urgency: { type: String, enum: ['low', 'medium', 'high', 'urgent'], default: 'medium' },
     priority: { type: String, enum: ['low', 'medium', 'high', 'critical'], default: 'medium' },
-    
+
     // SLA Management
     slaHours: { type: Number, default: 72 },
     dueAt: { type: Date },
-    
+
     // Escalation tracking
     escalatedAt: { type: Date },
     escalatedTo: { type: String },
     escalationReason: { type: String },
-    
+
     // Comments and updates
     comments: [{
       userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -68,13 +68,20 @@ const complaintSchema = new mongoose.Schema(
       isInternal: { type: Boolean, default: false }, // Internal notes not visible to complainant
       createdAt: { type: Date, default: Date.now }
     }],
-    
+
     // Privacy and security
     isEncrypted: { type: Boolean, default: false },
     encryptionKey: { type: String }, // For sensitive data encryption
   },
+
   { timestamps: true }
 );
+
+// Indexes for performance
+complaintSchema.index({ status: 1, createdAt: -1 });
+complaintSchema.index({ userId: 1, createdAt: -1 });
+complaintSchema.index({ department: 1, status: 1 });
+complaintSchema.index({ assignedTo: 1, status: 1 });
 
 // Generate anonymous ID for tracking
 complaintSchema.pre('save', function (next) {
@@ -82,18 +89,18 @@ complaintSchema.pre('save', function (next) {
     // Generate a unique anonymous ID using crypto
     this.anonymousId = crypto.randomBytes(16).toString('hex');
   }
-  
+
   // Set dueAt based on slaHours if not set
   if (!this.dueAt && this.slaHours) {
     const created = this.createdAt || new Date();
     this.dueAt = new Date(created.getTime() + this.slaHours * 60 * 60 * 1000);
   }
-  
+
   next();
 });
 
 // Method to get display name for anonymous complaints
-complaintSchema.methods.getDisplayName = function() {
+complaintSchema.methods.getDisplayName = function () {
   if (this.isAnonymous) {
     return 'Anonymous User';
   }
@@ -101,14 +108,14 @@ complaintSchema.methods.getDisplayName = function() {
 };
 
 // Method to check if user can view this complaint
-complaintSchema.methods.canUserView = function(user) {
+complaintSchema.methods.canUserView = function (user) {
   // Admin can view all
   if (user.role === 'admin') return true;
-  
+
   // User can view their own complaints
   const viewerId = user.id || user._id;
   if (this.userId && viewerId && this.userId.toString() === viewerId.toString()) return true;
-  
+
   // Department head/faculty can view department complaints
   if (
     (user.role === 'head' || user.role === 'faculty') &&
@@ -117,10 +124,10 @@ complaintSchema.methods.canUserView = function(user) {
   ) {
     return true;
   }
-  
+
   // Assigned user can view
   if (this.assignedTo && viewerId && this.assignedTo.toString() === viewerId.toString()) return true;
-  
+
   return false;
 };
 

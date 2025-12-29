@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import LoadingSkeleton from '../components/LoadingSkeleton';
 
 const STATUS_COLORS = {
   submitted: 'badge-warning',
@@ -17,16 +18,24 @@ function ComplaintTracker() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState('card');
+  const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
 
-  const fetchComplaints = async () => {
+  const fetchComplaints = async (page = 1) => {
     setLoading(true);
     try {
-      const params = {};
+      const params = { page, limit: 12 };
       if (queryId) params.id = queryId.trim();
       if (from) params.from = from;
       if (to) params.to = to;
       const res = await api.get('/complaints', { params });
-      setItems(res.data || []);
+
+      // Handle both old array format and new paginated format
+      if (Array.isArray(res.data)) {
+        setItems(res.data);
+      } else {
+        setItems(res.data.data || []);
+        setPagination(res.data.pagination);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -49,17 +58,17 @@ function ComplaintTracker() {
             <input className="input input-bordered" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
             <input className="input input-bordered" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
             <div className="flex gap-2">
-              <button className="btn btn-primary" onClick={fetchComplaints} disabled={loading}>Search</button>
+              <button className="btn btn-primary" onClick={() => fetchComplaints(1)} disabled={loading}>Search</button>
               <button className="btn" onClick={() => setView(view === 'card' ? 'table' : 'card')}>{view === 'card' ? 'Table View' : 'Card View'}</button>
             </div>
           </div>
         </div>
 
         <div className="mb-4 flex gap-2">
-          <button className="btn btn-outline" onClick={()=>navigate('/submit-complaint')}>Go to Submit Complaint</button>
+          <button className="btn btn-outline" onClick={() => navigate('/submit-complaint')}>Go to Submit Complaint</button>
         </div>
 
-        {view === 'card' ? (
+        {loading ? <LoadingSkeleton /> : view === 'card' ? (
           <div className="grid gap-4 md:grid-cols-2">
             {items.map((c) => (
               <div key={c._id} className="card bg-base-100 shadow">
@@ -73,9 +82,9 @@ function ComplaintTracker() {
                   <p className="text-sm">ID: {c._id}</p>
                   <div className="mt-3">
                     <ul className="steps steps-vertical lg:steps-horizontal">
-                      <li className={`step ${['submitted','in_progress','resolved'].includes(c.status) ? 'step-primary' : ''}`}>Submitted</li>
-                      <li className={`step ${['in_progress','resolved'].includes(c.status) ? 'step-primary' : ''}`}>Assigned</li>
-                      <li className={`step ${['in_progress','resolved'].includes(c.status) ? 'step-primary' : ''}`}>Reviewed</li>
+                      <li className={`step ${['submitted', 'in_progress', 'resolved'].includes(c.status) ? 'step-primary' : ''}`}>Submitted</li>
+                      <li className={`step ${['in_progress', 'resolved'].includes(c.status) ? 'step-primary' : ''}`}>Assigned</li>
+                      <li className={`step ${['in_progress', 'resolved'].includes(c.status) ? 'step-primary' : ''}`}>Reviewed</li>
                       <li className={`step ${c.status === 'resolved' ? 'step-primary' : ''}`}>Resolved</li>
                     </ul>
                   </div>
@@ -114,8 +123,30 @@ function ComplaintTracker() {
             </table>
           </div>
         )}
+
+
+        {/* Pagination Controls */}
+        <div className="flex justify-center mt-6">
+          <div className="join">
+            <button
+              className="join-item btn"
+              disabled={pagination.page <= 1 || loading}
+              onClick={() => fetchComplaints(pagination.page - 1)}
+            >
+              «
+            </button>
+            <button className="join-item btn">Page {pagination.page} of {pagination.pages || 1}</button>
+            <button
+              className="join-item btn"
+              disabled={pagination.page >= pagination.pages || loading}
+              onClick={() => fetchComplaints(pagination.page + 1)}
+            >
+              »
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </div >
   );
 }
 
