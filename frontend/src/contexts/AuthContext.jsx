@@ -85,32 +85,6 @@ export const AuthProvider = ({ children }) => {
     navigate('/login');
   };
 
-  // Session Timeout Logic
-  useEffect(() => {
-    if (!user) return;
-
-    let timeout;
-    const TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
-
-    const resetTimer = () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        logout();
-        alert('Session timed out due to inactivity');
-      }, TIMEOUT_MS);
-    };
-
-    const activities = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-    activities.forEach(ev => window.addEventListener(ev, resetTimer));
-
-    resetTimer(); // Start timer
-
-    return () => {
-      activities.forEach(ev => window.removeEventListener(ev, resetTimer));
-      clearTimeout(timeout);
-    };
-  }, [user]);
-
   const value = {
     user,
     loading,

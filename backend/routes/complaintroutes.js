@@ -25,39 +25,6 @@ const storage = multer.diskStorage({
   },
 });
 
-// Optimization: Using sharp for image compression if available
-let sharp;
-try {
-  sharp = require('sharp');
-} catch (e) {
-  // Sharp not installed; skipping compression
-}
-
-const compressImage = async (req, res, next) => {
-  if (!req.files || !sharp) return next();
-
-  const files = req.files.media || [];
-
-  try {
-    await Promise.all(files.map(async (file) => {
-      if (file.mimetype.startsWith('image/')) {
-        const tempPath = file.path + '.tmp';
-        await sharp(file.path)
-          .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
-          .jpeg({ quality: 80 }) // Compress to JPEG
-          .toFile(tempPath);
-
-        fs.unlinkSync(file.path);
-        fs.renameSync(tempPath, file.path);
-      }
-    }));
-    next();
-  } catch (err) {
-    console.error('Compression error:', err);
-    next(); // Continue even if compression fails
-  }
-};
-
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
 const DOC_TYPES = [
   'application/pdf',
@@ -97,7 +64,6 @@ router.post(
     { name: 'media', maxCount: 5 },
     { name: 'voice', maxCount: 1 },
   ]),
-  compressImage, // added compression
   complaintController.createComplaint
 );
 

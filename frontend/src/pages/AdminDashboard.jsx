@@ -31,13 +31,7 @@ function AdminDashboard() {
     try {
       const params = { ...filters };
       const res = await api.get('/complaints', { params });
-      // Handle both old array format and new paginated format
-      if (Array.isArray(res.data)) {
-        setItems(res.data);
-      } else {
-        setItems(res.data.data || []);
-        // Note: We might want to add pagination state if we want to support paging in admin dashboard too
-      }
+      setItems(res.data || []);
     } catch (e) {
       console.error(e);
     } finally {

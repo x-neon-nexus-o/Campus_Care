@@ -73,15 +73,8 @@ const complaintSchema = new mongoose.Schema(
     isEncrypted: { type: Boolean, default: false },
     encryptionKey: { type: String }, // For sensitive data encryption
   },
-
   { timestamps: true }
 );
-
-// Indexes for performance
-complaintSchema.index({ status: 1, createdAt: -1 });
-complaintSchema.index({ userId: 1, createdAt: -1 });
-complaintSchema.index({ department: 1, status: 1 });
-complaintSchema.index({ assignedTo: 1, status: 1 });
 
 // Generate anonymous ID for tracking
 complaintSchema.pre('save', function (next) {

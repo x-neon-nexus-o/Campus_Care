@@ -116,19 +116,13 @@ exports.listComplaints = async (req, res) => {
     ];
 
     // Cap limit to prevent abuse; allow admins larger exports
-    const maxLimit = req.user.role === 'admin' ? 10000 : 100;
-    const page = parseInt(req.query.page, 10) || 1;
-    const limitNum = parseInt(limit || '10', 10) || 10;
-    const safeLimit = Math.min(limitNum, maxLimit);
-    const skip = (page - 1) * safeLimit;
-
-    const total = await Complaint.countDocuments(query);
+    const maxLimit = req.user.role === 'admin' ? 10000 : 1000;
+    const safeLimit = Math.min(parseInt(limit || '100', 10) || 100, maxLimit);
 
     const items = await Complaint.find(query)
       .populate('userId', 'email name role')
       .populate('assignedTo', 'email name role department')
       .sort({ createdAt: -1 })
-      .skip(skip)
       .limit(safeLimit);
 
     // Transform data to hide sensitive information for non-admin users
@@ -148,15 +142,7 @@ exports.listComplaints = async (req, res) => {
       return complaint;
     });
 
-    res.json({
-      data: transformedItems,
-      pagination: {
-        total,
-        page,
-        pages: Math.ceil(total / safeLimit),
-        limit: safeLimit
-      }
-    });
+    res.json(transformedItems);
   } catch (err) {
     console.error('List complaints error:', err);
     res.status(500).json({ message: 'Server error: ' + err.message });

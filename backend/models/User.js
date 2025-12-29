@@ -35,9 +35,6 @@ const userSchema = new mongoose.Schema({
   sessionId: { type: String, default: null },
   resetToken: String,
   resetTokenExpiry: Date,
-  // 2FA Fields
-  twoFactorSecret: { type: String },
-  is2FAEnabled: { type: Boolean, default: false },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {

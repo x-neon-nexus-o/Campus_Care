@@ -13,12 +13,7 @@ const { protect } = require('../middleware/authMiddleware');
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/admin-login', authController.adminLogin);
-
-// 2FA Routes
-router.get('/2fa/setup', protect, authController.setup2FA);
-router.post('/2fa/verify', protect, authController.verify2FA);
-
-router.post('/forgot-password', authController.forgotPassword);
+router.post('/forgot', authController.forgotPassword);
 router.post('/reset', authController.resetPassword);
 router.get('/profile', protect, authController.getProfile);
 router.get('/users', protect, authController.getUsers);
