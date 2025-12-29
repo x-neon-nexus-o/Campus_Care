@@ -4,11 +4,27 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const resetPasswordTemplate = require('../emailTemplates/resetPasswordTemplate');
 
+const speakeasy = require('speakeasy');
+const qrcode = require('qrcode');
+const validator = require('validator');
+const rateLimit = require('express-rate-limit');
+
+// Strict rate limit for login
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 mins
+  max: 5, // 5 attempts
+  message: { message: 'Too many login attempts, please try again after 15 minutes' }
+});
+
 //Registration-x-neon-nexus-o
 exports.register = async (req, res) => {
   const { email, password } = req.body;
   if (!email.endsWith('@famt.ac.in')) {
     return res.status(400).json({ message: 'Only @famt.ac.in emails allowed for registration' });
+  }
+
+  if (!validator.isStrongPassword(password, { minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1 })) {
+    return res.status(400).json({ message: 'Password too weak. Must be 8+ chars with uppercase, lowercase, number, and symbol.' });
   }
 
   try {
@@ -21,10 +37,10 @@ exports.register = async (req, res) => {
     await user.save();
 
     const token = jwt.sign({ id: user._id, role: user.role, sessionId: user.sessionId }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.status(201).json({ 
-      token, 
+    res.status(201).json({
+      token,
       user: { id: user._id, email: user.email, role: user.role },
-      message: 'User registered successfully' 
+      message: 'User registered successfully'
     });
 
   } catch (err) {
@@ -34,66 +50,87 @@ exports.register = async (req, res) => {
 };
 
 //Login(all users)
-exports.login = async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    console.log('Login attempt for email:', email); // Debug log
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET is not defined');
+exports.login = [
+  loginLimiter,
+  async (req, res) => {
+    const { email, password } = req.body;
+    try {
+      console.log('Login attempt for email:', email); // Debug log
+      if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET is not defined');
+      }
+      const user = await User.findOne({ email });
+      if (!user) {
+        console.log('User not found:', email);
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      console.log('User found:', user.email, 'Role:', user.role); // Debug log
+      const isMatch = await user.comparePassword(password);
+
+      if (!isMatch) {
+        console.log('Password mismatch for:', email);
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      // Rotate session: generate a new sessionId to invalidate previous tokens
+      user.sessionId = crypto.randomBytes(16).toString('hex');
+      user.lastLogin = new Date();
+      await user.save();
+
+      const token = jwt.sign({ id: user._id, role: user.role, sessionId: user.sessionId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      console.log('Login successful for:', email);
+      res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
     }
-    const user = await User.findOne({ email });
-    if (!user) {
-      console.log('User not found:', email);
-      return res.status(401).json({ message: 'Invalid email or password' });
+
+    catch (err) {
+      console.error('Login error:', err.message, err.stack); // Detailed error log
+      res.status(500).json({ message: 'Server error: ' + err.message });
     }
-
-    console.log('User found:', user.email, 'Role:', user.role); // Debug log
-    const isMatch = await user.comparePassword(password);
-
-    if (!isMatch) {
-      console.log('Password mismatch for:', email);
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    // Rotate session: generate a new sessionId to invalidate previous tokens
-    user.sessionId = crypto.randomBytes(16).toString('hex');
-    user.lastLogin = new Date();
-    await user.save();
-
-    const token = jwt.sign({ id: user._id, role: user.role, sessionId: user.sessionId }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    console.log('Login successful for:', email);
-    res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
-  } 
-  
-  catch (err) {
-    console.error('Login error:', err.message, err.stack); // Detailed error log
-    res.status(500).json({ message: 'Server error: ' + err.message });
   }
-};
+];
 
 // Admin Login (only admins)
-exports.adminLogin = async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const user = await User.findOne({ email, role: 'admin' });
-    if (!user) {
-      return res.status(401).json({ message: 'No admin account found with this email' });
-    }
-    if (!(await user.comparePassword(password))) {
-      return res.status(401).json({ message: 'Invalid password' });
-    }
-    // Rotate session on admin login too
-    user.sessionId = crypto.randomBytes(16).toString('hex');
-    user.lastLogin = new Date();
-    await user.save();
+exports.adminLogin = [
+  loginLimiter,
+  async (req, res) => {
+    const { email, password, totpToken } = req.body;
+    try {
+      const user = await User.findOne({ email, role: 'admin' });
+      if (!user) {
+        return res.status(401).json({ message: 'No admin account found with this email' });
+      }
+      if (!(await user.comparePassword(password))) {
+        return res.status(401).json({ message: 'Invalid password' });
+      }
 
-    const token = jwt.sign({ id: user._id, role: user.role, sessionId: user.sessionId }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
-  } catch (err) {
-    console.error('Admin login error:', err);
-    res.status(500).json({ message: 'Server error: ' + err.message });
+      // 2FA Check
+      if (user.is2FAEnabled) {
+        if (!totpToken) {
+          return res.status(200).json({ require2FA: true, message: 'Please provide 2FA code' });
+        }
+        const verified = speakeasy.totp.verify({
+          secret: user.twoFactorSecret,
+          encoding: 'base32',
+          token: totpToken
+        });
+        if (!verified) {
+          return res.status(401).json({ message: 'Invalid 2FA code' });
+        }
+      }
+      // Rotate session on admin login too
+      user.sessionId = crypto.randomBytes(16).toString('hex');
+      user.lastLogin = new Date();
+      await user.save();
+
+      const token = jwt.sign({ id: user._id, role: user.role, sessionId: user.sessionId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
+    } catch (err) {
+      console.error('Admin login error:', err);
+      res.status(500).json({ message: 'Server error: ' + err.message });
+    }
   }
-};
+];
 
 // Forgot Password
 exports.forgotPassword = async (req, res) => {
@@ -113,7 +150,7 @@ exports.forgotPassword = async (req, res) => {
     });
 
     const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
-    
+
     const mailOptions = {
       to: user.email,
       from: `"CampusCare" <${process.env.EMAIL_USER}>`,
@@ -141,7 +178,7 @@ exports.resetPassword = async (req, res) => {
     user.resetToken = undefined;
     user.resetTokenExpiry = undefined;
     await user.save();
-    
+
     res.json({ message: 'Password reset successful' });
   } catch (err) {
     console.error('Reset password error:', err);
@@ -154,7 +191,7 @@ exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
+
     res.json(user);
   } catch (err) {
     console.error('Get profile error:', err);
@@ -173,5 +210,49 @@ exports.getUsers = async (req, res) => {
   } catch (err) {
     console.error('Get users error:', err);
     res.status(500).json({ message: 'Server error: ' + err.message });
+  }
+}
+
+
+// 2FA Setup (Enable)
+exports.setup2FA = async (req, res) => {
+  try {
+    const secret = speakeasy.generateSecret({ name: `CampusCare (${req.user.email})` });
+
+    // Save temp secret to user (or return it to be verified first)
+    // Here we return it to frontend to generate QR, then user calls verify to save it permanently
+
+    qrcode.toDataURL(secret.otpauth_url, (err, data_url) => {
+      if (err) return res.status(500).json({ message: 'Error generating QR' });
+      res.json({ secret: secret.base32, qrCode: data_url });
+    });
+  } catch (err) {
+    console.error('2FA setup error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// 2FA Verify & Enable
+exports.verify2FA = async (req, res) => {
+  const { token, secret } = req.body;
+  try {
+    const verified = speakeasy.totp.verify({
+      secret: secret,
+      encoding: 'base32',
+      token: token
+    });
+
+    if (verified) {
+      const user = await User.findById(req.user.id);
+      user.twoFactorSecret = secret;
+      user.is2FAEnabled = true;
+      await user.save();
+      res.json({ message: '2FA Enabled successfully' });
+    } else {
+      res.status(400).json({ message: 'Invalid token' });
+    }
+  } catch (err) {
+    console.error('2FA verify error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 };

@@ -4,23 +4,23 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { 
-    type: String, 
-    enum: ['student', 'faculty', 'head', 'admin'], 
-    default: 'student' 
+  role: {
+    type: String,
+    enum: ['student', 'faculty', 'head', 'admin'],
+    default: 'student'
   },
-  department: { 
-    type: String, 
+  department: {
+    type: String,
     enum: [
-      'IT Department', 
-      'Maintenance', 
-      'Security', 
-      'Mess', 
-      'Hostel', 
-      'Library', 
-      'Sports', 
-      'Transport', 
-      'Finance', 
+      'IT Department',
+      'Maintenance',
+      'Security',
+      'Mess',
+      'Hostel',
+      'Library',
+      'Sports',
+      'Transport',
+      'Finance',
       'Academic',
       'General'
     ],
@@ -35,6 +35,9 @@ const userSchema = new mongoose.Schema({
   sessionId: { type: String, default: null },
   resetToken: String,
   resetTokenExpiry: Date,
+  // 2FA Fields
+  twoFactorSecret: { type: String },
+  is2FAEnabled: { type: Boolean, default: false },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -48,7 +51,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 };
 
 // Add method to check if user can access department
-userSchema.methods.canAccessDepartment = function(department) {
+userSchema.methods.canAccessDepartment = function (department) {
   if (this.role === 'admin') return true;
   if (this.role === 'head' && this.department === department) return true;
   if (this.role === 'faculty' && this.department === department) return true;

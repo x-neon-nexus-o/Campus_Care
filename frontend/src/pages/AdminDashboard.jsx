@@ -4,8 +4,8 @@ import Charts from '../components/Charts';
 import NotificationCenter from '../components/NotificationCenter';
 import { exportToCSV, exportToPDF, exportToDOCX, exportToImage, exportStructuredPDF, formatComplaintsForExport } from '../utils/exportUtils';
 
-const STATUS = ['pending','in_review','in_progress','resolved','rejected','escalated'];
-const URGENCY = ['low','medium','high','urgent'];
+const STATUS = ['pending', 'in_review', 'in_progress', 'resolved', 'rejected', 'escalated'];
+const URGENCY = ['low', 'medium', 'high', 'urgent'];
 
 function AdminDashboard() {
   const [filters, setFilters] = useState({ dept: '', status: '', urgency: '', assigned: '' });
@@ -31,7 +31,13 @@ function AdminDashboard() {
     try {
       const params = { ...filters };
       const res = await api.get('/complaints', { params });
-      setItems(res.data || []);
+      // Handle both old array format and new paginated format
+      if (Array.isArray(res.data)) {
+        setItems(res.data);
+      } else {
+        setItems(res.data.data || []);
+        // Note: We might want to add pagination state if we want to support paging in admin dashboard too
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -133,16 +139,16 @@ function AdminDashboard() {
         {/* Filters */}
         <div className="card bg-base-100 shadow">
           <div className="card-body grid gap-3 md:grid-cols-5">
-            <input className="input input-bordered" placeholder="Department" value={filters.dept} onChange={(e)=>setFilters({...filters, dept:e.target.value})} />
-            <select className="select select-bordered" value={filters.status} onChange={(e)=>setFilters({...filters, status:e.target.value})}>
+            <input className="input input-bordered" placeholder="Department" value={filters.dept} onChange={(e) => setFilters({ ...filters, dept: e.target.value })} />
+            <select className="select select-bordered" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
               <option value="">All Status</option>
               {STATUS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            <select className="select select-bordered" value={filters.urgency} onChange={(e)=>setFilters({...filters, urgency:e.target.value})}>
+            <select className="select select-bordered" value={filters.urgency} onChange={(e) => setFilters({ ...filters, urgency: e.target.value })}>
               <option value="">All Urgency</option>
               {URGENCY.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            <select className="select select-bordered" value={filters.assigned} onChange={(e)=>setFilters({...filters, assigned:e.target.value})}>
+            <select className="select select-bordered" value={filters.assigned} onChange={(e) => setFilters({ ...filters, assigned: e.target.value })}>
               <option value="">All</option>
               <option value="true">Assigned</option>
               <option value="false">Unassigned</option>
@@ -224,10 +230,10 @@ function AdminDashboard() {
                     </div>
                   </td>
                   <td className="flex gap-2">
-                    <button className="btn btn-xs" onClick={()=>updateComplaint(c._id, { status: 'in_review' })}>Mark In-Review</button>
-                    <button className="btn btn-xs" onClick={()=>updateComplaint(c._id, { status: 'in_progress' })}>Start</button>
-                    <button className="btn btn-xs" onClick={()=>updateComplaint(c._id, { status: 'resolved' })}>Resolve</button>
-                    <button className="btn btn-xs" onClick={()=>updateComplaint(c._id, { status: 'escalated' })}>Escalate</button>
+                    <button className="btn btn-xs" onClick={() => updateComplaint(c._id, { status: 'in_review' })}>Mark In-Review</button>
+                    <button className="btn btn-xs" onClick={() => updateComplaint(c._id, { status: 'in_progress' })}>Start</button>
+                    <button className="btn btn-xs" onClick={() => updateComplaint(c._id, { status: 'resolved' })}>Resolve</button>
+                    <button className="btn btn-xs" onClick={() => updateComplaint(c._id, { status: 'escalated' })}>Escalate</button>
                   </td>
                 </tr>
               ))}
