@@ -1,52 +1,87 @@
-# 🎓 Web-Based Complaint Resolution System (CampusCare)
+<div align="center">
 
-## 📋 Project Description
+  <h1>🎓 CampusCare</h1>
+  
+  <p>
+    <b>A Comprehensive Web-Based Complaint Resolution System</b>
+  </p>
 
-**CampusCare** is a comprehensive web-based complaint resolution system designed specifically for college and university environments. This platform streamlines the process of reporting, tracking, and resolving campus-related issues, ensuring efficient communication between students, faculty, and administration.
+  <p>
+    <a href="https://github.com/your-username/campus-care/graphs/contributors">
+      <img src="https://img.shields.io/github/contributors/your-username/campus-care" alt="contributors" />
+    </a>
+    <a href="">
+      <img src="https://img.shields.io/github/last-commit/your-username/campus-care" alt="last update" />
+    </a>
+    <a href="https://github.com/your-username/campus-care/network/members">
+      <img src="https://img.shields.io/github/forks/your-username/campus-care" alt="forks" />
+    </a>
+    <a href="https://github.com/your-username/campus-care/stargazers">
+      <img src="https://img.shields.io/github/stars/your-username/campus-care" alt="stars" />
+    </a>
+    <a href="https://github.com/your-username/campus-care/issues">
+      <img src="https://img.shields.io/github/issues/your-username/campus-care" alt="open issues" />
+    </a>
+    <a href="https://github.com/your-username/campus-care/blob/master/LICENSE">
+      <img src="https://img.shields.io/github/license/your-username/campus-care.svg" alt="license" />
+    </a>
+  </p>
+   
+  <h4>
+    <a href="https://github.com/your-username/campus-care">View Demo</a>
+    <span> · </span>
+    <a href="https://github.com/your-username/campus-care/issues">Report Bug</a>
+    <span> · </span>
+    <a href="https://github.com/your-username/campus-care/issues">Request Feature</a>
+  </h4>
+</div>
 
-The system addresses the common challenges faced in traditional complaint management by providing a centralized, transparent, and user-friendly platform where students can voice their concerns and track resolution progress in real-time.
+<br />
 
-### 🎯 Project Goals
-- **Streamline Communication**: Bridge the gap between students and administration
-- **Ensure Transparency**: Provide real-time tracking and status updates
-- **Improve Efficiency**: Automate complaint routing and escalation processes
-- **Maintain Privacy**: Support anonymous complaint submission when needed
-- **Data-Driven Insights**: Generate analytics for better decision-making
+<!-- Table of Contents -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#key-features">Key Features</a></li>
+    <li><a href="#tech-stack">Tech Stack</a></li>
+    <li><a href="#system-architecture">System Architecture</a></li>
+    <li><a href="#getting-started">Getting Started</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ol>
+</details>
 
-## ✨ Key Features
+## 📋 <a name="about-the-project"></a>About The Project
 
-### 🔐 **Authentication & Authorization**
-- **Role-Based Access Control**: Students, Faculty, Department Heads, and Administrators
-- **Secure JWT Authentication**: Token-based authentication system
-- **Approval-Based Registration**: Admin-controlled user registration process
-- **Password Recovery**: Email-based password reset functionality
+**CampusCare** removes the friction from campus complaint management. Designed for modern educational institutions, it bridges the gap between students and administration through a transparent, efficient, and user-friendly digital platform.
 
-### 📝 **Complaint Management**
-- **Multi-Step Complaint Submission**: Intuitive form with validation
-- **Anonymous Filing**: Optional anonymous complaint submission
-- **Media Support**: Upload images, documents, and voice recordings
-- **Real-Time Tracking**: Live status updates and progress monitoring
-- **Categorization**: Infrastructure, Faculty, Harassment, Hostel, Mess, Admin, and Other
+<div align="center">
+  <!-- REPLACE WITH YOUR SCREENSHOTS -->
+  <img src="https://via.placeholder.com/800x400?text=Dashboard+Screenshot" alt="Dashboard Screenshot" width="800">
+</div>
 
-### 👥 **User Dashboards**
-- **Student Dashboard**: Submit complaints, track status, access help
-- **Faculty Dashboard**: Manage department complaints, update statuses
-- **Admin Panel**: Complete system oversight, analytics, and user management
-- **Responsive Design**: Mobile-friendly interface for all devices
+### 🎯 Core Objectives
+*   **Transparency**: Real-time status tracking for every complaint.
+*   **Efficiency**: Automated workflows to route issues to the right department.
+*   **Privacy**: Secure, optional anonymous reporting.
+*   **Insight**: Data analytics to identify recurring campus issues.
 
-### 📊 **Analytics & Reporting**
-- **Real-Time Statistics**: Complaint counts, resolution rates, response times
-- **Export Capabilities**: CSV, PDF, DOCX, and image exports
-- **Visual Charts**: Interactive graphs and KPI dashboards
-- **SLA Tracking**: Service Level Agreement monitoring and escalation
+---
 
-### 🔔 **Communication Features**
-- **Status Notifications**: Automated updates on complaint progress
-- **Comment System**: Internal and external communication threads
-- **Email Integration**: Automated notifications and alerts
-- **Escalation Management**: Automatic escalation for overdue complaints
+## ✨ <a name="key-features"></a>Key Features
 
-## 🛠️ Tech Stack
+| Category | Features |
+|:---:|:---|
+| **🔐 Security** | • Role-Based Access Control (RBAC)<br>• Secure JWT Authentication<br>• Encrypted Password Recovery |
+| **📝 Management** | • Multi-step Complaint Wizard<br>• Media Uploads (Images/Audio)<br>• Anonymous Filing Options |
+| **📊 Dashboards** | • Student: Track & Submit<br>• Faculty: Resolve & Update<br>• Admin: Analytics & Oversight |
+| **🔔 Notify** | • Real-time Status Updates<br>• Email Alerts<br>• Escalation Triggers for delays |
+
+## 🛠️ <a name="tech-stack"></a>Tech Stack
 
 ### **Frontend**
 - **⚛️ React 18**: Modern React with hooks and functional components
@@ -77,7 +112,7 @@ The system addresses the common challenges faced in traditional complaint manage
 - **📝 docx**: Microsoft Word document generation
 - **🔒 bcrypt**: Password hashing and security
 
-## 🏗️ System Architecture
+## 🏗️ <a name="system-architecture"></a>System Architecture
 
 ### **System Flow Overview**
 ```
@@ -133,115 +168,70 @@ CampusCare/
     └── 📄 vite.config.js      # Vite configuration
 ```
 
-## 🚀 Installation & Setup Guide
+## 🚀 <a name="getting-started"></a>Getting Started
 
-### **Prerequisites**
-Before you begin, ensure you have the following installed on your system:
-- **Node.js** (version 18 or higher) - [Download here](https://nodejs.org/)
-- **MongoDB** (local installation or MongoDB Atlas account) - [Setup guide](https://docs.mongodb.com/manual/installation/)
-- **Git** - [Download here](https://git-scm.com/)
+Follow these steps to set up the project locally.
 
-### **Step 1: Clone the Repository**
-```bash
-# Clone the repository
-git clone https://github.com/your-username/campus-care.git
+### Prerequisites
 
-# Navigate to the project directory
-cd campus-care
-```
+*   **Node.js** (v18+ recommended)
+*   **MongoDB** (Local or Atlas)
+*   **npm** or **yarn**
 
-### **Step 2: Backend Setup**
-```bash
-# Navigate to backend directory
-cd backend
+### Installation
 
-# Install backend dependencies
-npm install
+1.  **Clone the Repo**
+    ```sh
+    git clone https://github.com/your-username/campus-care.git
+    cd campus-care
+    ```
 
-# Create environment variables file
-cp .env.example .env
-```
+2.  **Backend Setup**
+    ```sh
+    cd backend
+    npm install
+    # Set up your .env file (see below)
+    cp .env.example .env
+    ```
 
-### **Step 3: Configure Environment Variables**
-Create a `.env` file in the `backend/` directory with the following configuration:
+3.  **Frontend Setup**
+    ```sh
+    cd ../frontend
+    npm install
+    ```
 
-```env
-# Server Configuration
-PORT=5000
+4.  **Database Seeding**
+    ```sh
+    cd ../backend
+    npm run seed:admin
+    ```
 
-# Database Configuration
-MONGODB_URI="mongodb://localhost:27017/campuscare"
-# For MongoDB Atlas, use your connection string:
-# MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/campuscare"
+5.  **Start Development Servers**
+    ```bash
+    # Backend (Terminal 1)
+    cd backend
+    npm run dev
 
-# JWT Configuration
-JWT_SECRET="your-super-secret-jwt-key-here"
+    # Frontend (Terminal 2)
+    cd ../frontend
+    npm run dev
+    ```
 
-# Email Configuration (for password reset)
-EMAIL_USER="your-email@gmail.com"
-EMAIL_PASS="your-app-password"
+### ⚙️ Environment Variables
 
-# Optional: Admin Configuration
-ADMIN_EMAIL="admin@famt.ac.in"
-ADMIN_PASSWORD="admin@123"
-```
+Create a `.env` file in `backend/` with the following:
 
-### **Step 4: Frontend Setup**
-```bash
-# Navigate to frontend directory (from project root)
-cd frontend
+| Variable | Description | Default/Example |
+|:--- |:--- |:--- |
+| `PORT` | API Server Port | `5000` |
+| `MONGODB_URI` | Database Connection String | `mongodb://localhost:27017/campuscare` |
+| `JWT_SECRET` | Secret for signing tokens | `your-super-secret-key` |
+| `EMAIL_USER` | Email for notifications | `mailer@campus.edu` |
+| `EMAIL_PASS` | App Password for email | `xxxx-xxxx-xxxx-xxxx` |
+| `ADMIN_EMAIL` | Default Admin Username | `admin@famt.ac.in` |
+| `ADMIN_PASSWORD` | Default Admin Password | `admin@123` |
 
-# Install frontend dependencies
-npm install
-```
-
-### **Step 5: Database Setup**
-```bash
-# Navigate to backend directory
-cd backend
-
-# Seed the database with default admin user
-npm run seed:admin
-
-# Optional: Create additional admin users
-npm run admin list
-```
-
-### **Step 6: Start the Application**
-
-**Option A: Development Mode (Recommended)**
-```bash
-# Terminal 1 - Start Backend Server
-cd backend
-npm run dev
-
-# Terminal 2 - Start Frontend Development Server
-cd frontend
-npm run dev
-```
-
-**Option B: Production Mode**
-```bash
-# Build frontend for production
-cd frontend
-npm run build
-
-# Start backend server
-cd ../backend
-npm start
-```
-
-### **Step 7: Access the Application**
-- **Frontend**: Open your browser and navigate to `http://localhost:3002`
-- **Backend API**: Available at `http://localhost:5000`
-- **Admin Panel**: Login with `admin@famt.ac.in` / `admin@123`
-
-### **🔧 Troubleshooting**
-- **Port conflicts**: Change the PORT in `.env` if 5000 is already in use
-- **Database connection**: Ensure MongoDB is running locally or check your Atlas connection string
-- **Email issues**: Verify your email credentials and enable "Less secure app access" for Gmail
-
-## 📖 Usage Guide
+## 📖 <a name="usage"></a>Usage Guide
 
 ### **👨‍🎓 For Students**
 
@@ -313,7 +303,7 @@ npm start
    • Handle escalated complaints
    ```
 
-## 🔮 Future Enhancements
+## 🔮 <a name="roadmap"></a>Future Enhancements
 
 ### **🤖 AI-Powered Features**
 - **Smart Categorization**: Automatic complaint classification using NLP
@@ -367,53 +357,27 @@ npm start
 - **Faculty Advisors** - For technical mentorship and support
 - **Beta Testers** - Students and staff who provided valuable feedback
 
-## 📄 License
+## 🤝 <a name="contributing"></a>Contributing
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-```
-MIT License
+1.  Fork the Project
+2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the Branch (`git push origin feature/AmazingFeature`)
+5.  Open a Pull Request
 
-Copyright (c) 2024 CampusCare Development Team
+## 📄 <a name="license"></a>License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Distributed under the MIT License. See `LICENSE` for more information.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## 📞 <a name="contact"></a>Contact
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
----
-
-## 📞 Support & Contact
-
-For technical support, bug reports, or feature requests:
-
-- **📧 Email**: support@campuscare.edu
-- **🐛 Issues**: [GitHub Issues](https://github.com/your-username/campus-care/issues)
-- **📖 Documentation**: [Wiki](https://github.com/your-username/campus-care/wiki)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/your-username/campus-care/discussions)
-
----
+**Support**: support@campuscare.edu  
+**Project Link**: [https://github.com/your-username/campus-care](https://github.com/your-username/campus-care)
 
 <div align="center">
-
-**⭐ If you found this project helpful, please give it a star! ⭐**
-
-Made with ❤️ by the CampusCare Development Team
-
+  <img src="https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F-red" alt="Made with Love">
 </div>
 
 
